@@ -19,6 +19,7 @@ import androidx.compose.material.icons.filled.Bookmark
 import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material.icons.filled.MoreHoriz
 import androidx.compose.material.icons.filled.PlayArrow
+import androidx.compose.material.icons.filled.Shield
 import androidx.compose.material.icons.filled.VolumeUp
 import androidx.compose.material.icons.outlined.BookmarkBorder
 import androidx.compose.material.icons.outlined.ChatBubbleOutline
@@ -57,6 +58,9 @@ fun PostCard(
     val coroutineScope = rememberCoroutineScope()
     var showDoubleTapHeart by remember { mutableStateOf(false) }
     var isVideoPlaying by remember { mutableStateOf(false) }
+    var isShieldedByReport by remember { mutableStateOf(false) }
+    var showSafetyMenu by remember { mutableStateOf(false) }
+    var reportNoticeText by remember { mutableStateOf<String?>(null) }
 
     Card(
         modifier = modifier
@@ -159,15 +163,88 @@ fun PostCard(
                     }
                 }
 
-                Icon(
-                    imageVector = Icons.Default.MoreHoriz,
-                    contentDescription = "Menu",
-                    tint = SecondaryText,
-                    modifier = Modifier.size(18.dp)
-                )
+                Box {
+                    IconButton(
+                        onClick = { showSafetyMenu = true },
+                        modifier = Modifier.size(24.dp)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.MoreHoriz,
+                            contentDescription = "Menu",
+                            tint = SecondaryText,
+                            modifier = Modifier.size(18.dp)
+                        )
+                    }
+
+                    DropdownMenu(
+                        expanded = showSafetyMenu,
+                        onDismissRequest = { showSafetyMenu = false }
+                    ) {
+                        DropdownMenuItem(
+                            text = { Text("Report for Nudity or Sexual Content", fontSize = 13.sp) },
+                            onClick = {
+                                showSafetyMenu = false
+                                isShieldedByReport = true
+                                reportNoticeText = "Reported for explicit content and hidden."
+                            }
+                        )
+                        DropdownMenuItem(
+                            text = { Text("Report for Abuse or Harassment", fontSize = 13.sp) },
+                            onClick = {
+                                showSafetyMenu = false
+                                isShieldedByReport = true
+                                reportNoticeText = "Reported for abusive content and hidden."
+                            }
+                        )
+                        DropdownMenuItem(
+                            text = { Text("Block @${post.author.username}", fontSize = 13.sp, color = androidx.compose.ui.graphics.Color(0xFFE53935)) },
+                            onClick = {
+                                showSafetyMenu = false
+                                isShieldedByReport = true
+                                reportNoticeText = "Blocked @${post.author.username}. Content removed."
+                            }
+                        )
+                    }
+                }
             }
 
-            Spacer(modifier = Modifier.height(10.dp))
+            if (isShieldedByReport) {
+                Surface(
+                    shape = RoundedCornerShape(12.dp),
+                    color = MaterialTheme.colorScheme.surfaceVariant,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 14.dp, vertical = 10.dp)
+                ) {
+                    Row(
+                        modifier = Modifier.padding(12.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Shield,
+                            contentDescription = null,
+                            tint = BrandPrimary,
+                            modifier = Modifier.size(18.dp)
+                        )
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text(
+                            text = reportNoticeText ?: "Moment hidden by safety shield.",
+                            style = MaterialTheme.typography.bodySmall.copy(fontSize = 12.sp),
+                            color = PrimaryText,
+                            modifier = Modifier.weight(1f)
+                        )
+                        Text(
+                            text = "Undo",
+                            style = MaterialTheme.typography.labelSmall.copy(
+                                color = BrandPrimary,
+                                fontWeight = FontWeight.Bold
+                            ),
+                            modifier = Modifier.clickable { isShieldedByReport = false }
+                        )
+                    }
+                }
+            } else {
+                Spacer(modifier = Modifier.height(10.dp))
 
             // Body: Photo, Video, or Text Thought
             Box(
@@ -475,6 +552,7 @@ fun PostCard(
                         .clickable { onCommentClick() }
                         .padding(horizontal = 14.dp, vertical = 2.dp)
                 )
+            }
             }
         }
     }

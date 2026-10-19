@@ -193,6 +193,7 @@ fun ChatDetailScreen(
     }
 
     var messageInput by remember { mutableStateOf("") }
+    var chatWarning by remember { mutableStateOf<String?>(null) }
 
     Scaffold(
         topBar = {
@@ -306,6 +307,25 @@ fun ChatDetailScreen(
                 }
             }
 
+            if (chatWarning != null) {
+                Surface(
+                    color = androidx.compose.ui.graphics.Color(0xFFFFEBEE),
+                    shape = RoundedCornerShape(8.dp),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 14.dp, vertical = 4.dp)
+                ) {
+                    Text(
+                        text = chatWarning ?: "",
+                        style = MaterialTheme.typography.labelSmall.copy(
+                            color = androidx.compose.ui.graphics.Color(0xFFC62828),
+                            fontSize = 11.sp
+                        ),
+                        modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp)
+                    )
+                }
+            }
+
             // Input Bar
             Surface(
                 color = MaterialTheme.colorScheme.surface,
@@ -362,8 +382,14 @@ fun ChatDetailScreen(
                     IconButton(
                         onClick = {
                             if (messageInput.isNotBlank()) {
+                                val screening = com.example.util.SafetyScreeningEngine.screenText(messageInput)
+                                if (!screening.isSafe) {
+                                    chatWarning = screening.message ?: "Message blocked by Safety Guard."
+                                    return@IconButton
+                                }
                                 viewModel.sendMessage(conversationId, messageInput)
                                 messageInput = ""
+                                chatWarning = null
                             }
                         },
                         modifier = Modifier

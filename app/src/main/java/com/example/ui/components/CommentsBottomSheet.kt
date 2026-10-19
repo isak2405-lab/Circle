@@ -139,6 +139,27 @@ fun CommentsBottomSheet(
 
             HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
 
+            var commentWarning by remember { mutableStateOf<String?>(null) }
+
+            if (commentWarning != null) {
+                Surface(
+                    color = androidx.compose.ui.graphics.Color(0xFFFFEBEE),
+                    shape = RoundedCornerShape(8.dp),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 16.dp, vertical = 4.dp)
+                ) {
+                    Text(
+                        text = commentWarning ?: "",
+                        style = MaterialTheme.typography.labelSmall.copy(
+                            color = androidx.compose.ui.graphics.Color(0xFFC62828),
+                            fontSize = 11.sp
+                        ),
+                        modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp)
+                    )
+                }
+            }
+
             // Input Row
             Row(
                 modifier = Modifier
@@ -148,7 +169,10 @@ fun CommentsBottomSheet(
             ) {
                 OutlinedTextField(
                     value = commentText,
-                    onValueChange = { commentText = it },
+                    onValueChange = {
+                        commentText = it
+                        if (commentWarning != null) commentWarning = null
+                    },
                     placeholder = { Text("Add a comment for the circle...", fontSize = 14.sp) },
                     modifier = Modifier
                         .weight(1f)
@@ -164,8 +188,14 @@ fun CommentsBottomSheet(
                 IconButton(
                     onClick = {
                         if (commentText.isNotBlank()) {
+                            val screening = com.example.util.SafetyScreeningEngine.screenText(commentText)
+                            if (!screening.isSafe) {
+                                commentWarning = screening.message ?: "Comment violates safety guidelines."
+                                return@IconButton
+                            }
                             onAddComment(commentText)
                             commentText = ""
+                            commentWarning = null
                         }
                     },
                     modifier = Modifier

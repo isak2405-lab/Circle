@@ -28,9 +28,11 @@ import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
 import com.example.data.model.PostType
 import com.example.ui.CircleViewModel
+import com.example.ui.theme.BrandPrimary
 import com.example.ui.theme.CirclePurple
 import com.example.ui.theme.CloseFriendsGreen
 import com.example.ui.theme.CloseFriendsGreenContainer
+import com.example.ui.theme.PrimaryText
 import com.example.ui.theme.PureWhite
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -62,6 +64,7 @@ fun CreatePostScreen(
     var taggedFriends by remember { mutableStateOf<List<String>>(emptyList()) }
     var draftSavedNotice by remember { mutableStateOf(false) }
     var selectedMediaUrl by remember { mutableStateOf(postDraft?.mediaUrl ?: samplePhotos[0]) }
+    var safetyAlertMessage by remember { mutableStateOf<String?>(null) }
 
     BackHandler {
         if (caption.isNotBlank() || thoughtText.isNotBlank()) {
@@ -133,6 +136,16 @@ fun CreatePostScreen(
 
                     Button(
                         onClick = {
+                            val screening = com.example.util.SafetyScreeningEngine.screenPost(
+                                caption = caption,
+                                thoughtText = if (selectedType == PostType.THOUGHT) thoughtText else null,
+                                mediaUrl = if (selectedType == PostType.THOUGHT) null else selectedMediaUrl
+                            )
+                            if (!screening.isSafe) {
+                                safetyAlertMessage = screening.message ?: "Content flagged by Safety Guard."
+                                return@Button
+                            }
+
                             viewModel.createPost(
                                 type = selectedType,
                                 mediaUrl = if (selectedType == PostType.THOUGHT) null else selectedMediaUrl,
@@ -519,5 +532,42 @@ fun CreatePostScreen(
 
             Spacer(modifier = Modifier.height(30.dp))
         }
+    }
+
+    if (safetyAlertMessage != null) {
+        AlertDialog(
+            onDismissRequest = { safetyAlertMessage = null },
+            icon = {
+                Icon(
+                    imageVector = Icons.Default.Shield,
+                    contentDescription = "Safety Alert",
+                    tint = androidx.compose.ui.graphics.Color(0xFFE53935),
+                    modifier = Modifier.size(32.dp)
+                )
+            },
+            title = {
+                Text(
+                    text = "ORBYN Safety Guard",
+                    fontWeight = FontWeight.Bold,
+                    color = PrimaryText
+                )
+            },
+            text = {
+                Text(
+                    text = safetyAlertMessage ?: "",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = PrimaryText
+                )
+            },
+            confirmButton = {
+                Button(
+                    onClick = { safetyAlertMessage = null },
+                    colors = ButtonDefaults.buttonColors(containerColor = BrandPrimary),
+                    shape = RoundedCornerShape(10.dp)
+                ) {
+                    Text("Understood", color = PureWhite)
+                }
+            }
+        )
     }
 }
