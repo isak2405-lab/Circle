@@ -29,9 +29,8 @@ import coil.compose.AsyncImage
 import com.example.data.model.Post
 import com.example.data.model.PostType
 import com.example.ui.CircleViewModel
-import com.example.ui.theme.CirclePurple
-import com.example.ui.theme.CloseFriendsGreen
-import com.example.ui.theme.PureWhite
+import com.example.ui.Screen
+import com.example.ui.theme.*
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -43,68 +42,74 @@ fun ProfileScreen(
     val posts by viewModel.posts.collectAsState()
     val highlights = viewModel.repository.profileHighlights
 
-    var selectedTab by remember { mutableIntStateOf(0) } // 0: Grid, 1: Saved
+    var selectedTab by remember { mutableIntStateOf(0) } // 0: Grid, 1: Settings
     var showEditProfileDialog by remember { mutableStateOf(false) }
 
-    // User's own posts
     val myPosts = remember(posts, currentUser.id) {
         posts.filter { it.author.id == currentUser.id }
-    }
-    val savedPosts = remember(posts) {
-        posts.filter { it.isSaved }
     }
 
     Column(
         modifier = modifier
             .fillMaxSize()
             .statusBarsPadding()
-            .background(MaterialTheme.colorScheme.background)
+            .background(AppCanvas)
     ) {
         // Top Bar
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 20.dp, vertical = 12.dp),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.SpaceBetween
+        Surface(
+            color = SurfaceColor,
+            tonalElevation = 0.dp,
+            border = androidx.compose.foundation.BorderStroke(1.dp, DividerOutline),
+            modifier = Modifier.fillMaxWidth()
         ) {
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Text(
-                    text = "@${currentUser.username}",
-                    style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold),
-                    color = MaterialTheme.colorScheme.onSurface
-                )
-                Spacer(modifier = Modifier.width(6.dp))
-                Icon(
-                    imageVector = Icons.Default.Lock,
-                    contentDescription = "Private Circle",
-                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                    modifier = Modifier.size(16.dp)
-                )
-            }
-
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                IconButton(
-                    onClick = { viewModel.navigateTo(com.example.ui.Screen.SecurityVault) },
-                    modifier = Modifier.testTag("profile_security_button")
-                ) {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 20.dp, vertical = 12.dp),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Text(
+                        text = "@${currentUser.username}",
+                        style = MaterialTheme.typography.titleMedium.copy(
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 17.sp
+                        ),
+                        color = PrimaryText
+                    )
+                    Spacer(modifier = Modifier.width(6.dp))
                     Icon(
-                        imageVector = Icons.Default.Shield,
-                        contentDescription = "Security Vault",
-                        tint = CloseFriendsGreen,
-                        modifier = Modifier.size(20.dp)
+                        imageVector = Icons.Default.Lock,
+                        contentDescription = "Private Circle",
+                        tint = SecondaryText,
+                        modifier = Modifier.size(15.dp)
                     )
                 }
 
-                IconButton(
-                    onClick = { viewModel.logout() },
-                    modifier = Modifier.testTag("logout_button")
-                ) {
-                    Icon(
-                        imageVector = Icons.AutoMirrored.Filled.ExitToApp,
-                        contentDescription = "Sign Out",
-                        tint = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    IconButton(
+                        onClick = { viewModel.navigateTo(com.example.ui.Screen.SecurityVault) },
+                        modifier = Modifier.testTag("profile_security_button")
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Shield,
+                            contentDescription = "Security Vault",
+                            tint = CloseFriendsGreen,
+                            modifier = Modifier.size(20.dp)
+                        )
+                    }
+
+                    IconButton(
+                        onClick = { viewModel.logout() },
+                        modifier = Modifier.testTag("logout_button")
+                    ) {
+                        Icon(
+                            imageVector = Icons.AutoMirrored.Filled.ExitToApp,
+                            contentDescription = "Sign Out",
+                            tint = SecondaryText
+                        )
+                    }
                 }
             }
         }
@@ -113,14 +118,14 @@ fun ProfileScreen(
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 20.dp, vertical = 8.dp),
+                .padding(horizontal = 20.dp, vertical = 14.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
             // Avatar
             Box(
                 modifier = Modifier
-                    .size(80.dp)
-                    .border(2.dp, CirclePurple, CircleShape)
+                    .size(76.dp)
+                    .border(1.5.dp, BrandPrimary, CircleShape)
                     .padding(3.dp)
             ) {
                 AsyncImage(
@@ -133,104 +138,104 @@ fun ProfileScreen(
                 )
             }
 
-            Spacer(modifier = Modifier.width(24.dp))
+            Spacer(modifier = Modifier.width(20.dp))
 
-            // Private Close Friends Stats (Anti-influencer design)
+            // Follower / Following counts: strictly owner-only visible
             Row(
                 modifier = Modifier.weight(1f),
                 horizontalArrangement = Arrangement.SpaceAround
             ) {
-                ProfileStatItem(count = "${posts.size + 12}", label = "Moments")
-                ProfileStatItem(count = "14", label = "Close Friends")
-                ProfileStatItem(count = "Private", label = "Circle Count")
+                ProfileStatItem(count = "${posts.size}", label = "Moments")
+                ProfileStatItem(count = "14", label = "Close circle")
+                ProfileStatItem(count = "28", label = "Following")
             }
         }
 
-        // Name, Bio, Listening Status
+        // Name, Tagline & Bio
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 20.dp, vertical = 8.dp)
+                .padding(horizontal = 20.dp)
         ) {
             Text(
                 text = currentUser.name,
-                style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
-                color = MaterialTheme.colorScheme.onSurface
+                style = MaterialTheme.typography.titleMedium.copy(
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 16.sp
+                ),
+                color = PrimaryText
+            )
+
+            Text(
+                text = "Your people. Your moments.",
+                style = MaterialTheme.typography.labelSmall.copy(
+                    color = BrandPrimary,
+                    fontSize = 11.sp,
+                    fontWeight = FontWeight.Medium
+                )
             )
 
             if (currentUser.bio.isNotBlank()) {
-                Spacer(modifier = Modifier.height(2.dp))
+                Spacer(modifier = Modifier.height(4.dp))
                 Text(
                     text = currentUser.bio,
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurface
-                )
-            }
-
-            if (currentUser.statusText != null) {
-                Spacer(modifier = Modifier.height(6.dp))
-                Surface(
-                    shape = RoundedCornerShape(12.dp),
-                    color = MaterialTheme.colorScheme.surfaceVariant
-                ) {
-                    Text(
-                        text = currentUser.statusText ?: "",
-                        style = MaterialTheme.typography.labelSmall.copy(
-                            fontWeight = FontWeight.Medium,
-                            fontSize = 11.sp
-                        ),
-                        modifier = Modifier.padding(horizontal = 10.dp, vertical = 4.dp),
-                        color = MaterialTheme.colorScheme.onSurface
+                    style = MaterialTheme.typography.bodyMedium.copy(
+                        fontSize = 13.sp,
+                        color = PrimaryText
                     )
-                }
+                )
             }
         }
 
-        // Edit Profile Button
+        Spacer(modifier = Modifier.height(12.dp))
+
+        // Outline Edit Profile Button (10-12dp radius)
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 20.dp, vertical = 8.dp)
+                .padding(horizontal = 20.dp)
         ) {
             OutlinedButton(
                 onClick = { showEditProfileDialog = true },
                 modifier = Modifier
                     .fillMaxWidth()
+                    .height(38.dp)
                     .testTag("edit_profile_button"),
-                shape = RoundedCornerShape(12.dp)
+                shape = RoundedCornerShape(11.dp),
+                border = androidx.compose.foundation.BorderStroke(1.dp, DividerOutline),
+                colors = ButtonDefaults.outlinedButtonColors(
+                    contentColor = PrimaryText
+                )
             ) {
                 Icon(
                     imageVector = Icons.Default.Edit,
                     contentDescription = null,
-                    modifier = Modifier.size(16.dp)
+                    modifier = Modifier.size(15.dp)
                 )
                 Spacer(modifier = Modifier.width(6.dp))
-                Text("Edit Profile", fontWeight = FontWeight.SemiBold)
+                Text(
+                    "Edit profile",
+                    style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.Medium)
+                )
             }
         }
 
-        // Moments Highlights
-        Text(
-            text = "Moments Highlights",
-            style = MaterialTheme.typography.labelLarge.copy(fontWeight = FontWeight.Bold),
-            color = MaterialTheme.colorScheme.onSurface,
-            modifier = Modifier.padding(horizontal = 20.dp, vertical = 4.dp)
-        )
+        Spacer(modifier = Modifier.height(14.dp))
 
+        // Moments Highlights Row
         LazyRow(
             contentPadding = PaddingValues(horizontal = 20.dp),
-            horizontalArrangement = Arrangement.spacedBy(16.dp),
-            modifier = Modifier.padding(vertical = 6.dp)
+            horizontalArrangement = Arrangement.spacedBy(14.dp)
         ) {
             items(highlights) { (title, imageUrl) ->
                 Column(
                     horizontalAlignment = Alignment.CenterHorizontally,
-                    modifier = Modifier.width(64.dp)
+                    modifier = Modifier.width(62.dp)
                 ) {
                     Box(
                         modifier = Modifier
-                            .size(60.dp)
-                            .border(1.5.dp, MaterialTheme.colorScheme.outline, CircleShape)
+                            .size(56.dp)
+                            .border(1.dp, DividerOutline, CircleShape)
                             .padding(2.5.dp)
                     ) {
                         AsyncImage(
@@ -245,108 +250,130 @@ fun ProfileScreen(
                     Spacer(modifier = Modifier.height(4.dp))
                     Text(
                         text = title,
-                        style = MaterialTheme.typography.labelSmall.copy(fontSize = 10.sp),
-                        color = MaterialTheme.colorScheme.onSurface,
+                        style = MaterialTheme.typography.labelSmall.copy(
+                            fontSize = 10.sp,
+                            color = PrimaryText
+                        ),
                         maxLines = 1
                     )
                 }
             }
         }
 
-        Spacer(modifier = Modifier.height(8.dp))
+        Spacer(modifier = Modifier.height(10.dp))
 
-        // Grid Tabs (Moments vs Saved)
+        // Tabs: Media Grid vs Simple White Settings sections
         TabRow(
             selectedTabIndex = selectedTab,
-            containerColor = MaterialTheme.colorScheme.surface,
-            contentColor = CirclePurple
+            containerColor = SurfaceColor,
+            contentColor = BrandPrimary,
+            modifier = Modifier.height(42.dp)
         ) {
             Tab(
                 selected = selectedTab == 0,
                 onClick = { selectedTab = 0 },
-                icon = { Icon(imageVector = Icons.Default.GridOn, contentDescription = "Moments") }
+                text = { Text("Moments Grid", fontSize = 12.sp) }
             )
             Tab(
                 selected = selectedTab == 1,
                 onClick = { selectedTab = 1 },
-                icon = { Icon(imageVector = Icons.Default.Bookmark, contentDescription = "Saved") }
+                text = { Text("Settings", fontSize = 12.sp) }
             )
         }
 
-        // Grid Content
-        val displayedPosts = if (selectedTab == 0) posts else savedPosts
-
-        if (displayedPosts.isEmpty()) {
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .weight(1f),
-                contentAlignment = Alignment.Center
-            ) {
-                Text(
-                    text = if (selectedTab == 0) "No moments yet." else "No saved moments yet.",
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-            }
-        } else {
+        // Tab Content
+        if (selectedTab == 0) {
+            // Three-column rounded media grid
             LazyVerticalGrid(
                 columns = GridCells.Fixed(3),
-                contentPadding = PaddingValues(bottom = 90.dp, top = 2.dp),
-                horizontalArrangement = Arrangement.spacedBy(2.dp),
-                verticalArrangement = Arrangement.spacedBy(2.dp),
-                modifier = Modifier.weight(1f)
+                contentPadding = PaddingValues(start = 14.dp, end = 14.dp, top = 8.dp, bottom = 90.dp),
+                horizontalArrangement = Arrangement.spacedBy(6.dp),
+                verticalArrangement = Arrangement.spacedBy(6.dp),
+                modifier = Modifier.fillMaxSize()
             ) {
-                items(displayedPosts, key = { it.id }) { post ->
-                    Box(
+                items(posts, key = { it.id }) { post ->
+                    Card(
+                        shape = RoundedCornerShape(14.dp),
+                        colors = CardDefaults.cardColors(containerColor = SurfaceColor),
+                        border = androidx.compose.foundation.BorderStroke(1.dp, DividerOutline),
                         modifier = Modifier
                             .aspectRatio(1f)
-                            .background(MaterialTheme.colorScheme.surfaceVariant)
                             .clickable { }
                     ) {
-                        if (post.type == PostType.THOUGHT) {
-                            Box(
-                                modifier = Modifier
-                                    .fillMaxSize()
-                                    .background(CirclePurple)
-                                    .padding(8.dp),
-                                contentAlignment = Alignment.Center
-                            ) {
-                                Text(
-                                    text = post.thoughtText ?: "Thought",
-                                    style = MaterialTheme.typography.labelSmall.copy(
-                                        color = PureWhite,
-                                        fontSize = 10.sp
-                                    ),
-                                    maxLines = 3
+                        Box(modifier = Modifier.fillMaxSize()) {
+                            if (post.type == PostType.THOUGHT) {
+                                Box(
+                                    modifier = Modifier
+                                        .fillMaxSize()
+                                        .background(SelectedBackground)
+                                        .padding(8.dp),
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    Text(
+                                        text = post.thoughtText ?: "",
+                                        style = MaterialTheme.typography.labelSmall.copy(
+                                            color = PrimaryText,
+                                            fontSize = 9.sp
+                                        ),
+                                        maxLines = 3
+                                    )
+                                }
+                            } else {
+                                AsyncImage(
+                                    model = post.mediaUrl,
+                                    contentDescription = post.caption,
+                                    contentScale = ContentScale.Crop,
+                                    modifier = Modifier.fillMaxSize()
                                 )
                             }
-                        } else {
-                            AsyncImage(
-                                model = post.mediaUrl,
-                                contentDescription = post.caption,
-                                contentScale = ContentScale.Crop,
-                                modifier = Modifier.fillMaxSize()
-                            )
-                        }
-
-                        if (post.isCloseFriendsOnly) {
-                            Box(
-                                modifier = Modifier
-                                    .size(7.dp)
-                                    .clip(CircleShape)
-                                    .background(CloseFriendsGreen)
-                                    .align(Alignment.TopEnd)
-                                    .padding(4.dp)
-                            )
                         }
                     }
+                }
+            }
+        } else {
+            // Settings: Simple white sections for account, privacy and inner-circle membership
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(horizontal = 16.dp, vertical = 12.dp),
+                verticalArrangement = Arrangement.spacedBy(10.dp)
+            ) {
+                SettingsSectionCard(
+                    title = "Account & Profile",
+                    description = "Edit name, handle, avatar and export your moments",
+                    onClick = { showEditProfileDialog = true }
+                )
+
+                SettingsSectionCard(
+                    title = "Privacy & Security Vault",
+                    description = "E2EE Curve25519, screenshot shield & disappearing timers",
+                    onClick = { viewModel.navigateTo(Screen.SecurityVault) }
+                )
+
+                SettingsSectionCard(
+                    title = "Inner-Circle Membership",
+                    description = "Manage close friends list and designated permissions",
+                    onClick = { /* Inner circle manager */ }
+                )
+
+                Spacer(modifier = Modifier.height(10.dp))
+
+                Box(
+                    modifier = Modifier.fillMaxWidth(),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        text = "Demo Mode • Circle v1.0 • Your people. Your moments.",
+                        style = MaterialTheme.typography.labelSmall.copy(
+                            fontSize = 11.sp,
+                            color = SecondaryText
+                        )
+                    )
                 }
             }
         }
     }
 
-    // Edit Profile Dialog
     if (showEditProfileDialog) {
         EditProfileDialog(
             name = currentUser.name,
@@ -368,14 +395,67 @@ private fun ProfileStatItem(count: String, label: String) {
     Column(horizontalAlignment = Alignment.CenterHorizontally) {
         Text(
             text = count,
-            style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
-            color = MaterialTheme.colorScheme.onSurface
+            style = MaterialTheme.typography.titleMedium.copy(
+                fontWeight = FontWeight.Bold,
+                fontSize = 16.sp
+            ),
+            color = PrimaryText
         )
         Text(
             text = label,
-            style = MaterialTheme.typography.labelSmall.copy(fontSize = 11.sp),
-            color = MaterialTheme.colorScheme.onSurfaceVariant
+            style = MaterialTheme.typography.labelSmall.copy(
+                fontSize = 11.sp,
+                color = SecondaryText
+            )
         )
+    }
+}
+
+@Composable
+private fun SettingsSectionCard(
+    title: String,
+    description: String,
+    onClick: () -> Unit
+) {
+    Surface(
+        shape = RoundedCornerShape(12.dp),
+        color = SurfaceColor,
+        border = androidx.compose.foundation.BorderStroke(1.dp, DividerOutline),
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable { onClick() }
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(14.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Column(modifier = Modifier.weight(1f)) {
+                Text(
+                    text = title,
+                    style = MaterialTheme.typography.titleSmall.copy(
+                        fontWeight = FontWeight.SemiBold,
+                        fontSize = 14.sp
+                    ),
+                    color = PrimaryText
+                )
+                Spacer(modifier = Modifier.height(2.dp))
+                Text(
+                    text = description,
+                    style = MaterialTheme.typography.bodySmall.copy(
+                        fontSize = 12.sp,
+                        color = SecondaryText
+                    )
+                )
+            }
+            Icon(
+                imageVector = Icons.Default.ChevronRight,
+                contentDescription = null,
+                tint = SecondaryText,
+                modifier = Modifier.size(18.dp)
+            )
+        }
     }
 }
 
@@ -397,7 +477,13 @@ private fun EditProfileDialog(
 
     AlertDialog(
         onDismissRequest = onDismiss,
-        title = { Text("Edit Circle Profile", fontWeight = FontWeight.Bold) },
+        title = {
+            Text(
+                "Edit profile",
+                fontWeight = FontWeight.Bold,
+                color = PrimaryText
+            )
+        },
         text = {
             Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
                 OutlinedTextField(
@@ -405,6 +491,7 @@ private fun EditProfileDialog(
                     onValueChange = { editName = it },
                     label = { Text("Name") },
                     singleLine = true,
+                    shape = RoundedCornerShape(10.dp),
                     modifier = Modifier.fillMaxWidth()
                 )
                 OutlinedTextField(
@@ -412,6 +499,7 @@ private fun EditProfileDialog(
                     onValueChange = { editUsername = it },
                     label = { Text("Username") },
                     singleLine = true,
+                    shape = RoundedCornerShape(10.dp),
                     modifier = Modifier.fillMaxWidth()
                 )
                 OutlinedTextField(
@@ -419,13 +507,7 @@ private fun EditProfileDialog(
                     onValueChange = { editBio = it },
                     label = { Text("Bio") },
                     maxLines = 3,
-                    modifier = Modifier.fillMaxWidth()
-                )
-                OutlinedTextField(
-                    value = editStatus,
-                    onValueChange = { editStatus = it },
-                    label = { Text("Status (e.g. 🎧 listening to...)") },
-                    singleLine = true,
+                    shape = RoundedCornerShape(10.dp),
                     modifier = Modifier.fillMaxWidth()
                 )
             }
@@ -433,14 +515,15 @@ private fun EditProfileDialog(
         confirmButton = {
             Button(
                 onClick = { onSave(editName, editUsername, editBio, editStatus, editAvatar) },
-                colors = ButtonDefaults.buttonColors(containerColor = CirclePurple)
+                colors = ButtonDefaults.buttonColors(containerColor = BrandPrimary),
+                shape = RoundedCornerShape(10.dp)
             ) {
                 Text("Save", color = PureWhite)
             }
         },
         dismissButton = {
             TextButton(onClick = onDismiss) {
-                Text("Cancel")
+                Text("Cancel", color = SecondaryText)
             }
         }
     )

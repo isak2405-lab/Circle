@@ -14,38 +14,34 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.Send
-import androidx.compose.material.icons.filled.Close
-import androidx.compose.material.icons.filled.Shield
-import androidx.compose.material.icons.filled.Tune
+import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.icons.filled.Image
+import androidx.compose.material.icons.outlined.Notifications
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.example.data.model.FeedDisplayDensity
-import com.example.data.model.FeedFilterMode
+import coil.compose.AsyncImage
+import com.example.R
 import com.example.data.model.Post
-import com.example.data.model.PostType
 import com.example.data.model.ReactionType
 import com.example.ui.CircleViewModel
 import com.example.ui.Screen
 import com.example.ui.components.CommentsBottomSheet
 import com.example.ui.components.PostCard
 import com.example.ui.components.StoriesTray
-import com.example.ui.theme.CirclePurple
-import com.example.ui.theme.CirclePurpleContainer
-import com.example.ui.theme.CloseFriendsGreen
-import com.example.ui.theme.CloseFriendsGreenContainer
-import com.example.ui.theme.PureWhite
+import com.example.ui.theme.*
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun FeedScreen(
     viewModel: CircleViewModel,
@@ -54,221 +50,287 @@ fun FeedScreen(
     val currentUser by viewModel.currentUser.collectAsStateWithLifecycle()
     val stories by viewModel.stories.collectAsStateWithLifecycle()
     val posts by viewModel.posts.collectAsStateWithLifecycle()
-    val conversations by viewModel.conversations.collectAsStateWithLifecycle()
-    val feedFilterMode by viewModel.feedFilterMode.collectAsStateWithLifecycle()
-    val feedDisplayDensity by viewModel.feedDisplayDensity.collectAsStateWithLifecycle()
+    val notifications by viewModel.notifications.collectAsStateWithLifecycle()
     val activeCommentPostId by viewModel.activeCommentPostId.collectAsStateWithLifecycle()
     val reactionBurst by viewModel.reactionBurst.collectAsStateWithLifecycle()
 
-    var showFeedOptionsSheet by remember { mutableStateOf(false) }
-
-    val totalUnreadMessages = remember(conversations) {
-        conversations.sumOf { it.unreadCount }
+    val unreadNotifications = remember(notifications) {
+        notifications.count { !it.isRead }
     }
 
-    // Filter posts dynamically according to selected Feed Option
-    val filteredPosts = remember(posts, feedFilterMode) {
-        when (feedFilterMode) {
-            FeedFilterMode.ALL_CHRONOLOGICAL -> posts
-            FeedFilterMode.CLOSE_FRIENDS_ONLY -> posts.filter { it.isCloseFriendsOnly }
-            FeedFilterMode.VISUAL_MOMENTS -> posts.filter { it.type == PostType.PHOTO || it.type == PostType.VIDEO }
-            FeedFilterMode.QUIET_THOUGHTS -> posts.filter { it.type == PostType.THOUGHT }
+    // Three quiet tabs: 0 = "All moments", 1 = "Close friends", 2 = "Following"
+    var selectedFeedTab by remember { mutableIntStateOf(0) }
+
+    val displayedPosts = remember(posts, selectedFeedTab) {
+        when (selectedFeedTab) {
+            0 -> posts // All moments
+            1 -> posts.filter { it.isCloseFriendsOnly } // Close friends
+            else -> posts.filter { it.author.id != currentUser.id } // Following
         }
     }
 
     Box(
         modifier = modifier
             .fillMaxSize()
-            .background(MaterialTheme.colorScheme.background)
+            .background(AppCanvas)
     ) {
         Column(modifier = Modifier.fillMaxSize()) {
-            // Circle Minimal Top Header
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .statusBarsPadding()
-                    .padding(horizontal = 18.dp, vertical = 10.dp),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.SpaceBetween
+            // Clean White Top App Bar
+            Surface(
+                color = SurfaceColor,
+                tonalElevation = 0.dp,
+                border = androidx.compose.foundation.BorderStroke(1.dp, DividerOutline),
+                modifier = Modifier.fillMaxWidth()
             ) {
-                // Brand Name "circle" with accent dot
                 Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .statusBarsPadding()
+                        .padding(horizontal = 18.dp, vertical = 10.dp),
                     verticalAlignment = Alignment.CenterVertically,
-                    modifier = Modifier.testTag("app_brand_title")
+                    horizontalArrangement = Arrangement.SpaceBetween
                 ) {
-                    Text(
-                        text = "circle",
-                        style = MaterialTheme.typography.headlineMedium.copy(
-                            fontWeight = FontWeight.Black,
-                            letterSpacing = (-1).sp,
-                            fontSize = 28.sp
-                        ),
-                        color = MaterialTheme.colorScheme.onSurface
-                    )
-                    Spacer(modifier = Modifier.width(4.dp))
-                    Box(
-                        modifier = Modifier
-                            .size(7.dp)
-                            .clip(CircleShape)
-                            .background(CirclePurple)
-                    )
-                }
-
-                // Actions: Security Vault + Feed Options + DMs button
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
-                ) {
-                    // Security Vault Shortcut Badge
-                    Surface(
-                        shape = CircleShape,
-                        color = MaterialTheme.colorScheme.surface,
-                        border = androidx.compose.foundation.BorderStroke(1.dp, CloseFriendsGreen.copy(alpha = 0.5f)),
-                        modifier = Modifier
-                            .size(38.dp)
-                            .clip(CircleShape)
-                            .clickable { viewModel.navigateTo(Screen.SecurityVault) }
-                            .testTag("security_vault_entry_button")
+                    // Left: Circle logo mark + lowercase "circle." wordmark with purple dot
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        modifier = Modifier.testTag("app_brand_header")
                     ) {
-                        Box(contentAlignment = Alignment.Center) {
-                            Icon(
-                                imageVector = Icons.Default.Shield,
-                                contentDescription = "Security Vault",
-                                tint = CloseFriendsGreen,
-                                modifier = Modifier.size(18.dp)
-                            )
-                        }
-                    }
-
-                    // Feed Options Pill
-                    Surface(
-                        shape = RoundedCornerShape(20.dp),
-                        color = if (feedFilterMode != FeedFilterMode.ALL_CHRONOLOGICAL) CloseFriendsGreenContainer else MaterialTheme.colorScheme.surface,
-                        border = if (feedFilterMode != FeedFilterMode.ALL_CHRONOLOGICAL) null else androidx.compose.foundation.BorderStroke(1.dp, MaterialTheme.colorScheme.outline),
-                        modifier = Modifier
-                            .height(36.dp)
-                            .clickable { showFeedOptionsSheet = true }
-                            .testTag("feed_options_button")
-                    ) {
-                        Row(
-                            modifier = Modifier.padding(horizontal = 10.dp),
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Icon(
-                                imageVector = Icons.Default.Tune,
-                                contentDescription = "Feed Options",
-                                tint = if (feedFilterMode != FeedFilterMode.ALL_CHRONOLOGICAL) CloseFriendsGreen else MaterialTheme.colorScheme.onSurface,
-                                modifier = Modifier.size(15.dp)
-                            )
-                            Spacer(modifier = Modifier.width(5.dp))
-                            Text(
-                                text = when (feedFilterMode) {
-                                    FeedFilterMode.ALL_CHRONOLOGICAL -> "Feed"
-                                    FeedFilterMode.CLOSE_FRIENDS_ONLY -> "Close Circle"
-                                    FeedFilterMode.VISUAL_MOMENTS -> "Visual"
-                                    FeedFilterMode.QUIET_THOUGHTS -> "Thoughts"
-                                },
-                                style = MaterialTheme.typography.labelSmall.copy(
-                                    fontWeight = FontWeight.SemiBold,
-                                    fontSize = 11.sp
-                                ),
-                                color = if (feedFilterMode != FeedFilterMode.ALL_CHRONOLOGICAL) CloseFriendsGreen else MaterialTheme.colorScheme.onSurface
-                            )
-                        }
-                    }
-
-                    // Direct Messages Button
-                    Box(
-                        modifier = Modifier
-                            .size(38.dp)
-                            .clip(CircleShape)
-                            .background(MaterialTheme.colorScheme.surface)
-                            .border(1.dp, MaterialTheme.colorScheme.outline, CircleShape)
-                            .clickable { viewModel.navigateTo(Screen.ChatList) }
-                            .testTag("dms_entry_button"),
-                        contentAlignment = Alignment.Center
-                    ) {
+                        // Official Circle logo mark
                         Icon(
-                            imageVector = Icons.AutoMirrored.Filled.Send,
-                            contentDescription = "Direct Messages",
-                            tint = MaterialTheme.colorScheme.onSurface,
-                            modifier = Modifier.size(18.dp)
+                            painter = painterResource(id = R.drawable.ic_circle_logo),
+                            contentDescription = "Circle Logo",
+                            tint = Color.Unspecified,
+                            modifier = Modifier.size(28.dp)
                         )
 
-                        if (totalUnreadMessages > 0) {
-                            Box(
-                                modifier = Modifier
-                                    .size(9.dp)
-                                    .clip(CircleShape)
-                                    .background(CirclePurple)
-                                    .align(Alignment.TopEnd)
+                        Spacer(modifier = Modifier.width(8.dp))
+
+                        Text(
+                            text = "circle",
+                            style = MaterialTheme.typography.titleLarge.copy(
+                                fontWeight = FontWeight.Bold,
+                                letterSpacing = (-0.5).sp,
+                                fontSize = 21.sp
+                            ),
+                            color = PrimaryText
+                        )
+                        Text(
+                            text = ".",
+                            style = MaterialTheme.typography.titleLarge.copy(
+                                fontWeight = FontWeight.Black,
+                                fontSize = 21.sp
+                            ),
+                            color = BrandPrimary
+                        )
+                    }
+
+                    // Right: Notification Bell (with purple unread dot) + Small Avatar
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(10.dp)
+                    ) {
+                        // Notification Bell
+                        Box(
+                            modifier = Modifier
+                                .size(38.dp)
+                                .clip(CircleShape)
+                                .clickable { viewModel.navigateTo(Screen.Notifications) }
+                                .testTag("notifications_bell_button"),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Icon(
+                                imageVector = Icons.Outlined.Notifications,
+                                contentDescription = "Notifications",
+                                tint = PrimaryText,
+                                modifier = Modifier.size(22.dp)
                             )
+                            if (unreadNotifications > 0) {
+                                Box(
+                                    modifier = Modifier
+                                        .size(7.dp)
+                                        .clip(CircleShape)
+                                        .background(BrandPrimary)
+                                        .align(Alignment.TopEnd)
+                                        .offset(x = (-4).dp, y = 4.dp)
+                                )
+                            }
                         }
+
+                        // Small Avatar
+                        AsyncImage(
+                            model = currentUser.avatarUrl,
+                            contentDescription = "Profile",
+                            contentScale = ContentScale.Crop,
+                            modifier = Modifier
+                                .size(30.dp)
+                                .clip(CircleShape)
+                                .border(1.dp, DividerOutline, CircleShape)
+                                .clickable { viewModel.navigateTo(Screen.Profile) }
+                                .testTag("top_bar_avatar")
+                        )
                     }
                 }
             }
 
-            // Feed Content: Stories Tray at top + Vertical Posts
+            // Feed Content Stream
             LazyColumn(
                 modifier = Modifier
                     .fillMaxSize()
                     .testTag("feed_list"),
                 contentPadding = PaddingValues(bottom = 90.dp)
             ) {
-                // Stories Tray (Disappearing 24h Moments)
+                // Header: "Your circle." + Subtitle: "Real life looks good on you."
+                item {
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 20.dp, vertical = 14.dp)
+                    ) {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Text(
+                                text = "Your circle",
+                                style = MaterialTheme.typography.headlineMedium.copy(
+                                    fontWeight = FontWeight.Bold,
+                                    fontSize = 28.sp,
+                                    letterSpacing = (-0.4).sp
+                                ),
+                                color = PrimaryText
+                            )
+                            Text(
+                                text = ".",
+                                style = MaterialTheme.typography.headlineMedium.copy(
+                                    fontWeight = FontWeight.Black,
+                                    fontSize = 28.sp
+                                ),
+                                color = BrandPrimary
+                            )
+                        }
+                        Spacer(modifier = Modifier.height(2.dp))
+                        Text(
+                            text = "Real life looks good on you.",
+                            style = MaterialTheme.typography.bodyMedium.copy(fontSize = 14.sp),
+                            color = SecondaryText
+                        )
+                    }
+                }
+
+                // Three Quiet Tabs: All moments, Close friends, Following
+                item {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 20.dp),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        val tabs = listOf("All moments", "Close friends", "Following")
+                        tabs.forEachIndexed { index, tabTitle ->
+                            val isSelected = selectedFeedTab == index
+                            Surface(
+                                shape = RoundedCornerShape(10.dp),
+                                color = if (isSelected) SelectedBackground else SurfaceColor,
+                                border = if (isSelected) null else androidx.compose.foundation.BorderStroke(1.dp, DividerOutline),
+                                modifier = Modifier
+                                    .clickable { selectedFeedTab = index }
+                                    .testTag("feed_tab_$index")
+                            ) {
+                                Text(
+                                    text = tabTitle,
+                                    style = MaterialTheme.typography.labelMedium.copy(
+                                        fontWeight = if (isSelected) FontWeight.SemiBold else FontWeight.Normal,
+                                        fontSize = 13.sp,
+                                        color = if (isSelected) BrandPrimary else SecondaryText
+                                    ),
+                                    modifier = Modifier.padding(horizontal = 14.dp, vertical = 7.dp)
+                                )
+                            }
+                        }
+                    }
+                    Spacer(modifier = Modifier.height(10.dp))
+                }
+
+                // Horizontal Moments Strip (with purple unseen rings, muted seen rings and Your moment/add control)
                 item {
                     StoriesTray(
                         currentUser = currentUser,
                         stories = stories,
-                        onStoryClick = { index ->
-                            viewModel.openStoryViewer(index)
-                        },
-                        onAddStoryClick = {
-                            viewModel.navigateTo(Screen.CreatePost)
-                        }
-                    )
-                    HorizontalDivider(
-                        color = MaterialTheme.colorScheme.outlineVariant,
-                        thickness = 0.5.dp,
-                        modifier = Modifier.padding(horizontal = 16.dp)
+                        onStoryClick = { index -> viewModel.openStoryViewer(index) },
+                        onAddStoryClick = { viewModel.navigateTo(Screen.CreatePost) }
                     )
                     Spacer(modifier = Modifier.height(4.dp))
                 }
 
-                // Feed Posts
-                if (filteredPosts.isEmpty()) {
+                // Slim Composer: "A little moment worth sharing?"
+                item {
+                    Surface(
+                        shape = RoundedCornerShape(14.dp),
+                        color = SurfaceColor,
+                        border = androidx.compose.foundation.BorderStroke(1.dp, DividerOutline),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 16.dp, vertical = 8.dp)
+                            .clickable { viewModel.navigateTo(Screen.CreatePost) }
+                            .testTag("slim_feed_composer")
+                    ) {
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(horizontal = 14.dp, vertical = 12.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            AsyncImage(
+                                model = currentUser.avatarUrl,
+                                contentDescription = null,
+                                contentScale = ContentScale.Crop,
+                                modifier = Modifier
+                                    .size(28.dp)
+                                    .clip(CircleShape)
+                            )
+                            Spacer(modifier = Modifier.width(12.dp))
+                            Text(
+                                text = "A little moment worth sharing?",
+                                style = MaterialTheme.typography.bodyMedium.copy(
+                                    color = PlaceholderHint,
+                                    fontSize = 14.sp
+                                ),
+                                modifier = Modifier.weight(1f)
+                            )
+                            Icon(
+                                imageVector = Icons.Default.Image,
+                                contentDescription = null,
+                                tint = SecondaryText,
+                                modifier = Modifier.size(18.dp)
+                            )
+                        }
+                    }
+                    Spacer(modifier = Modifier.height(6.dp))
+                }
+
+                // Posts Feed (Image-led vertical feed)
+                if (displayedPosts.isEmpty()) {
                     item {
                         Box(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .height(300.dp)
-                                .padding(24.dp),
+                                .padding(36.dp),
                             contentAlignment = Alignment.Center
                         ) {
                             Column(horizontalAlignment = Alignment.CenterHorizontally) {
                                 Text(
-                                    text = "No moments in this filter mode",
-                                    style = MaterialTheme.typography.titleMedium,
-                                    color = MaterialTheme.colorScheme.onSurface
+                                    text = "All caught up with your people.",
+                                    style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.SemiBold),
+                                    color = PrimaryText
                                 )
-                                Spacer(modifier = Modifier.height(6.dp))
+                                Spacer(modifier = Modifier.height(4.dp))
                                 Text(
-                                    text = "Switch to 'Live Chronological' or post a new moment.",
+                                    text = "A little less noise. A little more you.",
                                     style = MaterialTheme.typography.bodyMedium,
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                    color = SecondaryText
                                 )
-                                Spacer(modifier = Modifier.height(16.dp))
-                                Button(
-                                    onClick = { viewModel.setFeedFilterMode(FeedFilterMode.ALL_CHRONOLOGICAL) },
-                                    colors = ButtonDefaults.buttonColors(containerColor = CirclePurple)
-                                ) {
-                                    Text("Reset Filter", color = PureWhite)
-                                }
                             }
                         }
                     }
                 } else {
-                    items(filteredPosts, key = { it.id }) { post ->
+                    items(displayedPosts, key = { it.id }) { post ->
                         PostCard(
                             post = post,
                             onReactionClick = { reaction ->
@@ -281,6 +343,29 @@ fun FeedScreen(
                                 viewModel.toggleSavePost(post.id)
                             }
                         )
+                    }
+
+                    // Feed footer warm copy
+                    item {
+                        Column(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(vertical = 32.dp),
+                            horizontalAlignment = Alignment.CenterHorizontally
+                        ) {
+                            Text(
+                                text = "All caught up with your people.",
+                                style = MaterialTheme.typography.labelLarge.copy(
+                                    fontWeight = FontWeight.SemiBold,
+                                    color = PrimaryText
+                                )
+                            )
+                            Spacer(modifier = Modifier.height(2.dp))
+                            Text(
+                                text = "A little less noise. A little more you.",
+                                style = MaterialTheme.typography.labelSmall.copy(color = SecondaryText)
+                            )
+                        }
                     }
                 }
             }
@@ -300,96 +385,6 @@ fun FeedScreen(
             }
         }
 
-        // Feed Options Bottom Sheet
-        if (showFeedOptionsSheet) {
-            ModalBottomSheet(
-                onDismissRequest = { showFeedOptionsSheet = false },
-                shape = RoundedCornerShape(topStart = 28.dp, topEnd = 28.dp),
-                containerColor = MaterialTheme.colorScheme.surface
-            ) {
-                Column(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 20.dp)
-                        .padding(bottom = WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding() + 16.dp)
-                ) {
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Text(
-                            text = "Feed Options & Preferences",
-                            style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold)
-                        )
-                        IconButton(onClick = { showFeedOptionsSheet = false }) {
-                            Icon(Icons.Default.Close, contentDescription = "Close")
-                        }
-                    }
-
-                    Spacer(modifier = Modifier.height(12.dp))
-
-                    Text(
-                        text = "FEED CURATION MODE",
-                        style = MaterialTheme.typography.labelSmall.copy(
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                            fontWeight = FontWeight.Bold
-                        )
-                    )
-                    Spacer(modifier = Modifier.height(8.dp))
-
-                    FeedFilterMode.entries.forEach { mode ->
-                        val isSelected = feedFilterMode == mode
-                        Surface(
-                            shape = RoundedCornerShape(14.dp),
-                            color = if (isSelected) CirclePurpleContainer else MaterialTheme.colorScheme.surfaceVariant,
-                            border = if (isSelected) androidx.compose.foundation.BorderStroke(1.5.dp, CirclePurple) else null,
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(vertical = 4.dp)
-                                .clickable {
-                                    viewModel.setFeedFilterMode(mode)
-                                    showFeedOptionsSheet = false
-                                }
-                                .testTag("feed_mode_${mode.name.lowercase()}")
-                        ) {
-                            Column(modifier = Modifier.padding(14.dp)) {
-                                Text(
-                                    text = mode.label,
-                                    style = MaterialTheme.typography.titleSmall.copy(
-                                        fontWeight = FontWeight.Bold,
-                                        color = if (isSelected) CirclePurple else MaterialTheme.colorScheme.onSurface
-                                    )
-                                )
-                                Text(
-                                    text = mode.description,
-                                    style = MaterialTheme.typography.bodySmall,
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                                )
-                            }
-                        }
-                    }
-
-                    Spacer(modifier = Modifier.height(16.dp))
-
-                    // Shortcut to Security Vault
-                    Button(
-                        onClick = {
-                            showFeedOptionsSheet = false
-                            viewModel.navigateTo(Screen.SecurityVault)
-                        },
-                        colors = ButtonDefaults.buttonColors(containerColor = CloseFriendsGreen),
-                        shape = RoundedCornerShape(16.dp),
-                        modifier = Modifier.fillMaxWidth()
-                    ) {
-                        Icon(imageVector = Icons.Default.Shield, contentDescription = null, tint = PureWhite, modifier = Modifier.size(18.dp))
-                        Spacer(modifier = Modifier.width(8.dp))
-                        Text("Open Security & Privacy Vault", color = PureWhite, fontWeight = FontWeight.Bold)
-                    }
-                }
-            }
-        }
-
         // Floating Reaction Burst
         AnimatedVisibility(
             visible = reactionBurst != null,
@@ -402,13 +397,13 @@ fun FeedScreen(
                 Surface(
                     shape = CircleShape,
                     color = PureWhite,
-                    shadowElevation = 8.dp,
-                    modifier = Modifier.size(72.dp)
+                    shadowElevation = 6.dp,
+                    modifier = Modifier.size(68.dp)
                 ) {
                     Box(contentAlignment = Alignment.Center) {
                         Text(
                             text = burst.second.emoji,
-                            fontSize = 38.sp
+                            fontSize = 36.sp
                         )
                     }
                 }

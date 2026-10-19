@@ -22,15 +22,15 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
+import com.example.R
 import com.example.ui.CircleViewModel
-import com.example.ui.theme.CirclePurple
-import com.example.ui.theme.PureBlack
-import com.example.ui.theme.PureWhite
+import com.example.ui.theme.*
 
 @Composable
 fun AuthScreen(
@@ -56,7 +56,7 @@ fun AuthScreen(
             .fillMaxSize()
             .statusBarsPadding()
             .navigationBarsPadding()
-            .background(MaterialTheme.colorScheme.background)
+            .background(AppCanvas)
             .padding(24.dp),
         contentAlignment = Alignment.Center
     ) {
@@ -67,56 +67,76 @@ fun AuthScreen(
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center
         ) {
-            // Brand Logo & Title
-            Box(
-                modifier = Modifier
-                    .size(68.dp)
-                    .clip(CircleShape)
-                    .background(CirclePurple),
-                contentAlignment = Alignment.Center
-            ) {
-                Box(
-                    modifier = Modifier
-                        .size(34.dp)
-                        .clip(CircleShape)
-                        .border(4.dp, PureWhite, CircleShape)
+            // Circle Logo (Purple rounded square with overlapping white open rings)
+            Icon(
+                painter = painterResource(id = R.drawable.ic_circle_logo),
+                contentDescription = "Circle Logo",
+                tint = Color.Unspecified,
+                modifier = Modifier.size(68.dp)
+            )
+
+            Spacer(modifier = Modifier.height(14.dp))
+
+            // Lowercase wordmark "circle." with purple dot
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Text(
+                    text = "circle",
+                    style = MaterialTheme.typography.displayLarge.copy(
+                        fontWeight = FontWeight.Bold,
+                        letterSpacing = (-1.2).sp,
+                        fontSize = 34.sp
+                    ),
+                    color = PrimaryText
+                )
+                Text(
+                    text = ".",
+                    style = MaterialTheme.typography.displayLarge.copy(
+                        fontWeight = FontWeight.Black,
+                        fontSize = 34.sp
+                    ),
+                    color = BrandPrimary
                 )
             }
 
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(4.dp))
 
+            // Tagline: Your people. Your moments.
             Text(
-                text = "circle",
-                style = MaterialTheme.typography.displayLarge.copy(
-                    fontWeight = FontWeight.Black,
-                    letterSpacing = (-1.5).sp,
-                    fontSize = 38.sp
+                text = "Your people. Your moments.",
+                style = MaterialTheme.typography.bodyMedium.copy(
+                    fontWeight = FontWeight.Medium,
+                    fontSize = 14.sp
                 ),
-                color = MaterialTheme.colorScheme.onSurface
-            )
-
-            Text(
-                text = "for your closest friends, not the feed algorithm.",
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
+                color = SecondaryText
             )
 
             Spacer(modifier = Modifier.height(28.dp))
 
-            // Google One-Tap Login Button
-            OutlinedButton(
-                onClick = { viewModel.login("alex@gmail.com", "alexvance") },
-                shape = RoundedCornerShape(24.dp),
+            // Google One-Tap Sign In Button
+            Surface(
+                shape = RoundedCornerShape(12.dp),
+                color = SurfaceColor,
+                border = androidx.compose.foundation.BorderStroke(1.dp, DividerOutline),
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(50.dp)
+                    .height(48.dp)
+                    .clickable { viewModel.login("alex@gmail.com", "alexvance") }
                     .testTag("google_login_button")
             ) {
-                Text(
-                    text = "G  Continue with Google",
-                    style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.SemiBold),
-                    color = MaterialTheme.colorScheme.onSurface
-                )
+                Row(
+                    modifier = Modifier.fillMaxSize(),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.Center
+                ) {
+                    Text(
+                        text = "Continue with Google",
+                        style = MaterialTheme.typography.titleSmall.copy(
+                            fontWeight = FontWeight.SemiBold,
+                            fontSize = 14.sp
+                        ),
+                        color = PrimaryText
+                    )
+                }
             }
 
             Spacer(modifier = Modifier.height(16.dp))
@@ -125,23 +145,22 @@ fun AuthScreen(
                 modifier = Modifier.fillMaxWidth(),
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                HorizontalDivider(modifier = Modifier.weight(1f), color = MaterialTheme.colorScheme.outlineVariant)
+                HorizontalDivider(modifier = Modifier.weight(1f), color = DividerOutline)
                 Text(
                     text = " or with email ",
-                    style = MaterialTheme.typography.labelSmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                    style = MaterialTheme.typography.labelSmall.copy(color = SecondaryText)
                 )
-                HorizontalDivider(modifier = Modifier.weight(1f), color = MaterialTheme.colorScheme.outlineVariant)
+                HorizontalDivider(modifier = Modifier.weight(1f), color = DividerOutline)
             }
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // Form Fields
+            // Onboarding fields
             if (isSignUp) {
                 Text(
                     text = "Choose your avatar",
-                    style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.SemiBold),
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                    style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.Medium),
+                    color = SecondaryText
                 )
                 Spacer(modifier = Modifier.height(8.dp))
                 LazyRow(
@@ -154,11 +173,11 @@ fun AuthScreen(
                             contentDescription = null,
                             contentScale = ContentScale.Crop,
                             modifier = Modifier
-                                .size(50.dp)
+                                .size(48.dp)
                                 .clip(CircleShape)
                                 .border(
-                                    width = if (isChosen) 3.dp else 1.dp,
-                                    color = if (isChosen) CirclePurple else MaterialTheme.colorScheme.outline,
+                                    width = if (isChosen) 2.5.dp else 1.dp,
+                                    color = if (isChosen) BrandPrimary else DividerOutline,
                                     shape = CircleShape
                                 )
                                 .clickable { selectedAvatar = url }
@@ -170,10 +189,10 @@ fun AuthScreen(
                 OutlinedTextField(
                     value = name,
                     onValueChange = { name = it },
-                    label = { Text("Your Name") },
-                    leadingIcon = { Icon(Icons.Default.Person, contentDescription = null) },
+                    label = { Text("Your name") },
+                    leadingIcon = { Icon(Icons.Default.Person, contentDescription = null, tint = SecondaryText) },
                     modifier = Modifier.fillMaxWidth(),
-                    shape = RoundedCornerShape(18.dp),
+                    shape = RoundedCornerShape(11.dp),
                     singleLine = true
                 )
                 Spacer(modifier = Modifier.height(10.dp))
@@ -181,10 +200,10 @@ fun AuthScreen(
                 OutlinedTextField(
                     value = username,
                     onValueChange = { username = it },
-                    label = { Text("Username (@handle)") },
-                    leadingIcon = { Text("@", fontWeight = FontWeight.Bold, modifier = Modifier.padding(start = 12.dp)) },
+                    label = { Text("Username") },
+                    leadingIcon = { Text("@", fontWeight = FontWeight.Bold, color = SecondaryText, modifier = Modifier.padding(start = 12.dp)) },
                     modifier = Modifier.fillMaxWidth(),
-                    shape = RoundedCornerShape(18.dp),
+                    shape = RoundedCornerShape(11.dp),
                     singleLine = true
                 )
                 Spacer(modifier = Modifier.height(10.dp))
@@ -194,9 +213,9 @@ fun AuthScreen(
                 value = email,
                 onValueChange = { email = it },
                 label = { Text("Email") },
-                leadingIcon = { Icon(Icons.Default.Email, contentDescription = null) },
+                leadingIcon = { Icon(Icons.Default.Email, contentDescription = null, tint = SecondaryText) },
                 modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(18.dp),
+                shape = RoundedCornerShape(11.dp),
                 singleLine = true
             )
 
@@ -206,10 +225,10 @@ fun AuthScreen(
                 value = password,
                 onValueChange = { password = it },
                 label = { Text("Password") },
-                leadingIcon = { Icon(Icons.Default.Lock, contentDescription = null) },
+                leadingIcon = { Icon(Icons.Default.Lock, contentDescription = null, tint = SecondaryText) },
                 visualTransformation = PasswordVisualTransformation(),
                 modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(18.dp),
+                shape = RoundedCornerShape(11.dp),
                 singleLine = true
             )
 
@@ -217,16 +236,16 @@ fun AuthScreen(
 
             Button(
                 onClick = { viewModel.login(email, if (isSignUp) username else "alexvance") },
-                colors = ButtonDefaults.buttonColors(containerColor = CirclePurple),
-                shape = RoundedCornerShape(24.dp),
+                colors = ButtonDefaults.buttonColors(containerColor = BrandPrimary),
+                shape = RoundedCornerShape(11.dp),
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(50.dp)
+                    .height(48.dp)
                     .testTag("submit_auth_button")
             ) {
                 Text(
-                    text = if (isSignUp) "Create My Circle" else "Enter Circle",
-                    style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold),
+                    text = if (isSignUp) "Create circle" else "Enter circle",
+                    style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.SemiBold),
                     color = PureWhite
                 )
             }
@@ -238,9 +257,9 @@ fun AuthScreen(
                 modifier = Modifier.testTag("toggle_auth_mode_button")
             ) {
                 Text(
-                    text = if (isSignUp) "Already have a Circle? Sign in" else "New here? Set up your Circle",
-                    color = MaterialTheme.colorScheme.primary,
-                    style = MaterialTheme.typography.bodySmall.copy(fontWeight = FontWeight.SemiBold)
+                    text = if (isSignUp) "Already have a circle? Sign in" else "New here? Set up your circle",
+                    color = BrandPrimary,
+                    style = MaterialTheme.typography.bodySmall.copy(fontWeight = FontWeight.Medium)
                 )
             }
         }

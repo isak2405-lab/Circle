@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="48dp"
+    android:height="48dp"
+    android:viewportWidth="48"
+    android:viewportHeight="48">
+    <!-- Rounded Purple Square #6C5CE7 -->
+    <path
+        android:fillColor="#6C5CE7"
+        android:pathData="M12,4 L36,4 A8,8 0 0,1 44,12 L44,36 A8,8 0 0,1 36,44 L12,44 A8,8 0 0,1 4,36 L4,12 A8,8 0 0,1 12,4 Z" />
+
+    <!-- Overlapping White Open Rings -->
+    <!-- Top-Right Arc -->
+    <path
+        android:strokeColor="#FFFFFF"
+        android:strokeWidth="4.2"
+        android:strokeLineCap="round"
+        android:fillColor="#00000000"
+        android:pathData="M24,12 A12,12 0 0,1 36,24 A12,12 0 0,1 30,34.4" />
+
+    <!-- Bottom-Left Arc Overlapping -->
+    <path
+        android:strokeColor="#FFFFFF"
+        android:strokeWidth="4.2"
+        android:strokeLineCap="round"
+        android:fillColor="#00000000"
+        android:pathData="M24,36 A12,12 0 0,1 12,24 A12,12 0 0,1 18,13.6" />
+</vector>

@@ -45,14 +45,14 @@ class CircleRepository {
     private val _activeCall = MutableStateFlow<ActiveCall?>(null)
     val activeCall: StateFlow<ActiveCall?> = _activeCall.asStateFlow()
 
-    // 5 Aesthetic Filters
+    // Filters as specified in prompt: Original plus five filters: Golden, Film, Mono, Bloom and Dusk
     val aestheticFilters = listOf(
-        AestheticFilter("f_orig", "Original", "True colors", 0x00000000, 1.0f, 1.0f),
-        AestheticFilter("f_mono", "Mono Noir", "High contrast film B&W", 0x22000000, 1.25f, 0.0f),
-        AestheticFilter("f_golden", "Golden Hour", "Amber warm sunshine glow", 0x33FFB300, 1.1f, 1.2f),
-        AestheticFilter("f_violet", "Dreamy Violet", "Circle signature purple haze", 0x336C5CE7, 1.05f, 1.15f),
-        AestheticFilter("f_cyber", "Cyber Chrome", "Moody teal & cool tones", 0x3300CEC9, 1.2f, 1.1f),
-        AestheticFilter("f_grain", "Warm Grain", "Vintage 35mm nostalgic hue", 0x25D35400, 1.15f, 0.85f)
+        AestheticFilter("f_orig", "Original", "Natural look", 0x00000000, 1.0f, 1.0f),
+        AestheticFilter("f_golden", "Golden", "Warm afternoon sun", 0x25FFB300, 1.1f, 1.2f),
+        AestheticFilter("f_film", "Film", "35mm grain & tones", 0x20D35400, 1.15f, 0.9f),
+        AestheticFilter("f_mono", "Mono", "Restrained black & white", 0x25000000, 1.25f, 0.0f),
+        AestheticFilter("f_bloom", "Bloom", "Soft highlight glow", 0x256C5CE7, 1.05f, 1.1f),
+        AestheticFilter("f_dusk", "Dusk", "Deep evening quiet", 0x25262338, 1.2f, 1.05f)
     )
 
     // Draft Post

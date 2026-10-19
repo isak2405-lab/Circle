@@ -12,41 +12,41 @@ import androidx.compose.ui.platform.LocalView
 import androidx.core.view.WindowCompat
 
 private val LightColorScheme = lightColorScheme(
-    primary = CirclePurple,
+    primary = BrandPrimary,
     onPrimary = PureWhite,
-    primaryContainer = CirclePurpleContainer,
-    onPrimaryContainer = CirclePurpleDark,
+    primaryContainer = SelectedBackground,
+    onPrimaryContainer = BrandPrimary,
     secondary = CloseFriendsGreen,
     onSecondary = PureWhite,
     secondaryContainer = CloseFriendsGreenContainer,
     onSecondaryContainer = CloseFriendsGreen,
-    background = NeutralBg,
-    onBackground = PureBlack,
-    surface = SurfaceCard,
-    onSurface = PureBlack,
-    surfaceVariant = DividerColor,
-    onSurfaceVariant = SubtitleText,
-    outline = BorderSubtle,
-    outlineVariant = DividerColor
+    background = AppCanvas,
+    onBackground = PrimaryText,
+    surface = SurfaceColor,
+    onSurface = PrimaryText,
+    surfaceVariant = SelectedBackground,
+    onSurfaceVariant = SecondaryText,
+    outline = DividerOutline,
+    outlineVariant = DividerOutline
 )
 
 private val DarkColorScheme = darkColorScheme(
-    primary = CirclePurpleLight,
-    onPrimary = PureBlack,
-    primaryContainer = DarkSurface,
-    onPrimaryContainer = CirclePurpleLight,
+    primary = BrandPrimary,
+    onPrimary = PureWhite,
+    primaryContainer = DarkSelected,
+    onPrimaryContainer = BrandPrimary,
     secondary = CloseFriendsGreen,
-    onSecondary = PureBlack,
+    onSecondary = PureWhite,
     secondaryContainer = DarkSurface,
     onSecondaryContainer = CloseFriendsGreen,
-    background = DarkBg,
-    onBackground = PureWhite,
+    background = DarkCanvas,
+    onBackground = DarkTextPrimary,
     surface = DarkSurface,
-    onSurface = PureWhite,
-    surfaceVariant = DarkBorder,
-    onSurfaceVariant = DarkMuted,
-    outline = DarkBorder,
-    outlineVariant = DarkBorder
+    onSurface = DarkTextPrimary,
+    surfaceVariant = DarkSelected,
+    onSurfaceVariant = DarkTextSecondary,
+    outline = DarkOutline,
+    outlineVariant = DarkOutline
 )
 
 @Composable
@@ -59,8 +59,8 @@ fun CircleTheme(
     if (!view.isInEditMode) {
         SideEffect {
             val window = (view.context as? Activity)?.window ?: return@SideEffect
-            window.statusBarColor = colorScheme.background.toArgb()
-            window.navigationBarColor = colorScheme.background.toArgb()
+            window.statusBarColor = colorScheme.surface.toArgb()
+            window.navigationBarColor = colorScheme.surface.toArgb()
             val controller = WindowCompat.getInsetsController(window, view)
             controller.isAppearanceLightStatusBars = !darkTheme
             controller.isAppearanceLightNavigationBars = !darkTheme

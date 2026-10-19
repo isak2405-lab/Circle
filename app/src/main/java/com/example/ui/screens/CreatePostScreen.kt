@@ -39,11 +39,18 @@ fun CreatePostScreen(
     viewModel: CircleViewModel,
     onBack: () -> Unit
 ) {
-    BackHandler { onBack() }
-
     val aestheticFilters = viewModel.aestheticFilters
     val postDraft by viewModel.postDraft.collectAsState()
     val friends = remember { viewModel.getFriends() }
+
+    // Preset Aesthetic Photos to pick from
+    val samplePhotos = listOf(
+        "https://images.unsplash.com/photo-1517841905240-472988babdf9?w=900&auto=format&fit=crop&q=80",
+        "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=900&auto=format&fit=crop&q=80",
+        "https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?w=900&auto=format&fit=crop&q=80",
+        "https://images.unsplash.com/photo-1534447677768-be436bb09401?w=900&auto=format&fit=crop&q=80",
+        "https://images.unsplash.com/photo-1524504388940-b1c1722653e1?w=900&auto=format&fit=crop&q=80"
+    )
 
     // State initialized from draft if present
     var selectedType by remember { mutableStateOf(postDraft?.type ?: PostType.PHOTO) }
@@ -54,16 +61,22 @@ fun CreatePostScreen(
     var isCloseFriendsOnly by remember { mutableStateOf(postDraft?.isCloseFriendsOnly ?: true) }
     var taggedFriends by remember { mutableStateOf<List<String>>(emptyList()) }
     var draftSavedNotice by remember { mutableStateOf(false) }
-
-    // Preset Aesthetic Photos to pick from
-    val samplePhotos = listOf(
-        "https://images.unsplash.com/photo-1517841905240-472988babdf9?w=900&auto=format&fit=crop&q=80",
-        "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=900&auto=format&fit=crop&q=80",
-        "https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?w=900&auto=format&fit=crop&q=80",
-        "https://images.unsplash.com/photo-1534447677768-be436bb09401?w=900&auto=format&fit=crop&q=80",
-        "https://images.unsplash.com/photo-1524504388940-b1c1722653e1?w=900&auto=format&fit=crop&q=80"
-    )
     var selectedMediaUrl by remember { mutableStateOf(postDraft?.mediaUrl ?: samplePhotos[0]) }
+
+    BackHandler {
+        if (caption.isNotBlank() || thoughtText.isNotBlank()) {
+            viewModel.saveDraft(
+                caption = caption,
+                type = selectedType,
+                mediaUrl = selectedMediaUrl,
+                thoughtText = thoughtText,
+                filterName = selectedFilter,
+                location = location,
+                isCloseFriendsOnly = isCloseFriendsOnly
+            )
+        }
+        onBack()
+    }
 
     Scaffold(
         topBar = {
@@ -76,7 +89,20 @@ fun CreatePostScreen(
                 },
                 navigationIcon = {
                     IconButton(
-                        onClick = onBack,
+                        onClick = {
+                            if (caption.isNotBlank() || thoughtText.isNotBlank()) {
+                                viewModel.saveDraft(
+                                    caption = caption,
+                                    type = selectedType,
+                                    mediaUrl = selectedMediaUrl,
+                                    thoughtText = thoughtText,
+                                    filterName = selectedFilter,
+                                    location = location,
+                                    isCloseFriendsOnly = isCloseFriendsOnly
+                                )
+                            }
+                            onBack()
+                        },
                         modifier = Modifier.testTag("create_post_back_button")
                     ) {
                         Icon(imageVector = Icons.Default.Close, contentDescription = "Cancel")
@@ -99,7 +125,7 @@ fun CreatePostScreen(
                         modifier = Modifier.testTag("save_draft_button")
                     ) {
                         Text(
-                            text = if (draftSavedNotice) "Saved ✓" else "Save Draft",
+                            text = if (draftSavedNotice) "Saved ✓" else "Save for later",
                             color = MaterialTheme.colorScheme.primary,
                             style = MaterialTheme.typography.labelMedium
                         )
@@ -119,7 +145,7 @@ fun CreatePostScreen(
                             )
                         },
                         colors = ButtonDefaults.buttonColors(containerColor = CirclePurple),
-                        shape = RoundedCornerShape(20.dp),
+                        shape = RoundedCornerShape(12.dp),
                         modifier = Modifier
                             .padding(end = 8.dp)
                             .testTag("publish_post_button"),
@@ -127,7 +153,7 @@ fun CreatePostScreen(
                                 (selectedType == PostType.THOUGHT && thoughtText.isNotBlank()) ||
                                 caption.isNotBlank()
                     ) {
-                        Text("Post", color = PureWhite, fontWeight = FontWeight.SemiBold)
+                        Text("Share", color = PureWhite, fontWeight = FontWeight.SemiBold)
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(

@@ -1,17 +1,15 @@
 package com.example.ui.components
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.Favorite
-import androidx.compose.material.icons.filled.Home
-import androidx.compose.material.icons.filled.Person
-import androidx.compose.material.icons.filled.Search
-import androidx.compose.material.icons.outlined.FavoriteBorder
+import androidx.compose.material.icons.outlined.ChatBubbleOutline
 import androidx.compose.material.icons.outlined.Home
 import androidx.compose.material.icons.outlined.Person
 import androidx.compose.material.icons.outlined.Search
@@ -25,14 +23,16 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.dp
 import com.example.ui.Screen
-import com.example.ui.theme.CirclePurple
-import com.example.ui.theme.PureBlack
+import com.example.ui.theme.BrandPrimary
+import com.example.ui.theme.DividerOutline
 import com.example.ui.theme.PureWhite
+import com.example.ui.theme.SecondaryText
+import com.example.ui.theme.SurfaceColor
 
 @Composable
 fun CircleBottomBar(
     currentScreen: Screen,
-    unreadNotifications: Int,
+    unreadMessages: Int,
     onNavigate: (Screen) -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -40,44 +40,42 @@ fun CircleBottomBar(
         modifier = modifier
             .fillMaxWidth()
             .windowInsetsPadding(WindowInsets.navigationBars),
-        color = MaterialTheme.colorScheme.surface,
-        tonalElevation = 6.dp,
-        border = null
+        color = SurfaceColor,
+        tonalElevation = 0.dp,
+        border = androidx.compose.foundation.BorderStroke(1.dp, DividerOutline)
     ) {
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .height(64.dp)
-                .padding(horizontal = 16.dp),
+                .height(58.dp)
+                .padding(horizontal = 8.dp),
             horizontalArrangement = Arrangement.SpaceAround,
             verticalAlignment = Alignment.CenterVertically
         ) {
-            // Home / Feed
-            BottomBarItem(
+            // Feed
+            BottomBarNavItem(
                 selected = currentScreen is Screen.Feed,
-                selectedIcon = Icons.Filled.Home,
-                unselectedIcon = Icons.Outlined.Home,
+                icon = Icons.Outlined.Home,
                 contentDescription = "Feed",
                 testTag = "nav_feed",
                 onClick = { onNavigate(Screen.Feed) }
             )
 
             // Explore
-            BottomBarItem(
+            BottomBarNavItem(
                 selected = currentScreen is Screen.Explore,
-                selectedIcon = Icons.Filled.Search,
-                unselectedIcon = Icons.Outlined.Search,
+                icon = Icons.Outlined.Search,
                 contentDescription = "Explore",
                 testTag = "nav_explore",
                 onClick = { onNavigate(Screen.Explore) }
             )
 
-            // Create Post (Elevated Circle button)
+            // Create: Compact purple rounded-square plus button (as specified in prompt)
             Box(
                 modifier = Modifier
-                    .size(46.dp)
-                    .clip(CircleShape)
-                    .background(CirclePurple)
+                    .size(36.dp)
+                    .clip(RoundedCornerShape(10.dp))
+                    .background(BrandPrimary)
                     .clickable(
                         interactionSource = remember { MutableInteractionSource() },
                         indication = ripple()
@@ -87,28 +85,26 @@ fun CircleBottomBar(
             ) {
                 Icon(
                     imageVector = Icons.Default.Add,
-                    contentDescription = "Create Post",
+                    contentDescription = "Create",
                     tint = PureWhite,
-                    modifier = Modifier.size(26.dp)
+                    modifier = Modifier.size(20.dp)
                 )
             }
 
-            // Notifications
-            BottomBarItem(
-                selected = currentScreen is Screen.Notifications,
-                selectedIcon = Icons.Filled.Favorite,
-                unselectedIcon = Icons.Outlined.FavoriteBorder,
-                contentDescription = "Notifications",
-                badgeCount = unreadNotifications,
-                testTag = "nav_notifications",
-                onClick = { onNavigate(Screen.Notifications) }
+            // Messages
+            BottomBarNavItem(
+                selected = currentScreen is Screen.ChatList,
+                icon = Icons.Outlined.ChatBubbleOutline,
+                contentDescription = "Messages",
+                badgeCount = unreadMessages,
+                testTag = "nav_messages",
+                onClick = { onNavigate(Screen.ChatList) }
             )
 
             // Profile
-            BottomBarItem(
+            BottomBarNavItem(
                 selected = currentScreen is Screen.Profile,
-                selectedIcon = Icons.Filled.Person,
-                unselectedIcon = Icons.Outlined.Person,
+                icon = Icons.Outlined.Person,
                 contentDescription = "Profile",
                 testTag = "nav_profile",
                 onClick = { onNavigate(Screen.Profile) }
@@ -118,10 +114,9 @@ fun CircleBottomBar(
 }
 
 @Composable
-private fun BottomBarItem(
+private fun BottomBarNavItem(
     selected: Boolean,
-    selectedIcon: ImageVector,
-    unselectedIcon: ImageVector,
+    icon: ImageVector,
     contentDescription: String,
     badgeCount: Int = 0,
     testTag: String,
@@ -130,7 +125,7 @@ private fun BottomBarItem(
     Box(
         modifier = Modifier
             .size(48.dp)
-            .clip(CircleShape)
+            .clip(RoundedCornerShape(12.dp))
             .clickable(
                 interactionSource = remember { MutableInteractionSource() },
                 indication = ripple()
@@ -139,19 +134,20 @@ private fun BottomBarItem(
         contentAlignment = Alignment.Center
     ) {
         Icon(
-            imageVector = if (selected) selectedIcon else unselectedIcon,
+            imageVector = icon,
             contentDescription = contentDescription,
-            tint = if (selected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
-            modifier = Modifier.size(26.dp)
+            tint = if (selected) BrandPrimary else SecondaryText,
+            modifier = Modifier.size(24.dp)
         )
 
         if (badgeCount > 0) {
             Box(
                 modifier = Modifier
-                    .size(8.dp)
+                    .size(7.dp)
                     .clip(CircleShape)
-                    .background(CirclePurple)
+                    .background(BrandPrimary)
                     .align(Alignment.TopEnd)
+                    .offset(x = (-8).dp, y = 8.dp)
             )
         }
     }

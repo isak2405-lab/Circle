@@ -36,12 +36,12 @@ class MainActivity : ComponentActivity() {
 @Composable
 fun CircleApp(viewModel: CircleViewModel = viewModel()) {
     val currentScreen by viewModel.currentScreen.collectAsStateWithLifecycle()
-    val notifications by viewModel.notifications.collectAsStateWithLifecycle()
-    val unreadNotifications = notifications.count { !it.isRead }
+    val conversations by viewModel.conversations.collectAsStateWithLifecycle()
+    val unreadMessages = conversations.sumOf { it.unreadCount }
 
     val isPrimaryTab = currentScreen is Screen.Feed ||
             currentScreen is Screen.Explore ||
-            currentScreen is Screen.Notifications ||
+            currentScreen is Screen.ChatList ||
             currentScreen is Screen.Profile
 
     Scaffold(
@@ -50,7 +50,7 @@ fun CircleApp(viewModel: CircleViewModel = viewModel()) {
             if (isPrimaryTab) {
                 CircleBottomBar(
                     currentScreen = currentScreen,
-                    unreadNotifications = unreadNotifications,
+                    unreadMessages = unreadMessages,
                     onNavigate = { screen -> viewModel.navigateTo(screen) }
                 )
             }

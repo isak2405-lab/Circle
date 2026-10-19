@@ -16,7 +16,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.testTag
@@ -27,9 +26,12 @@ import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
 import com.example.data.model.User
 import com.example.data.model.UserStory
-import com.example.ui.theme.CirclePurple
+import com.example.ui.theme.BrandPrimary
 import com.example.ui.theme.CloseFriendsGreen
+import com.example.ui.theme.DividerOutline
+import com.example.ui.theme.PrimaryText
 import com.example.ui.theme.PureWhite
+import com.example.ui.theme.SecondaryText
 
 @Composable
 fun StoriesTray(
@@ -47,7 +49,7 @@ fun StoriesTray(
         horizontalArrangement = Arrangement.spacedBy(16.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        // "Your Moment"
+        // "Your moment" / Add Control
         item {
             Column(
                 horizontalAlignment = Alignment.CenterHorizontally,
@@ -56,26 +58,26 @@ fun StoriesTray(
                     .testTag("story_item_my_moment")
             ) {
                 Box(
-                    modifier = Modifier.size(68.dp),
+                    modifier = Modifier.size(66.dp),
                     contentAlignment = Alignment.Center
                 ) {
                     AsyncImage(
                         model = currentUser.avatarUrl,
-                        contentDescription = "Your avatar",
+                        contentDescription = "Your moment",
                         contentScale = ContentScale.Crop,
                         modifier = Modifier
-                            .size(60.dp)
+                            .size(58.dp)
                             .clip(CircleShape)
-                            .border(1.5.dp, MaterialTheme.colorScheme.outline, CircleShape)
+                            .border(1.dp, DividerOutline, CircleShape)
                     )
 
                     // Add badge (+)
                     Surface(
                         shape = CircleShape,
-                        color = CirclePurple,
-                        shadowElevation = 3.dp,
+                        color = BrandPrimary,
+                        shadowElevation = 2.dp,
                         modifier = Modifier
-                            .size(22.dp)
+                            .size(20.dp)
                             .align(Alignment.BottomEnd)
                     ) {
                         Box(contentAlignment = Alignment.Center) {
@@ -83,44 +85,32 @@ fun StoriesTray(
                                 imageVector = Icons.Default.Add,
                                 contentDescription = "Add moment",
                                 tint = PureWhite,
-                                modifier = Modifier.size(16.dp)
+                                modifier = Modifier.size(14.dp)
                             )
                         }
                     }
                 }
 
-                Spacer(modifier = Modifier.height(6.dp))
+                Spacer(modifier = Modifier.height(5.dp))
                 Text(
-                    text = "Your circle",
+                    text = "Your moment",
                     style = MaterialTheme.typography.labelMedium.copy(
                         fontSize = 11.sp,
                         fontWeight = FontWeight.Medium
                     ),
-                    color = MaterialTheme.colorScheme.onSurface,
+                    color = PrimaryText,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis
                 )
             }
         }
 
-        // Friends Stories
+        // Friends Stories (Purple unseen rings, muted seen rings)
         itemsIndexed(stories) { index, story ->
-            val ringBrush = when {
-                story.isSeen -> Brush.linearGradient(listOf(Color(0xFFD4D4D8), Color(0xFFE4E4E7)))
-                story.isCloseFriendsOnly -> Brush.sweepGradient(
-                    listOf(
-                        CloseFriendsGreen,
-                        Color(0xFF34D399),
-                        CloseFriendsGreen
-                    )
-                )
-                else -> Brush.sweepGradient(
-                    listOf(
-                        CirclePurple,
-                        Color(0xFFA29BFE),
-                        CirclePurple
-                    )
-                )
+            val ringColor = when {
+                story.isSeen -> DividerOutline
+                story.isCloseFriendsOnly -> CloseFriendsGreen
+                else -> BrandPrimary
             }
 
             Column(
@@ -131,10 +121,10 @@ fun StoriesTray(
             ) {
                 Box(
                     modifier = Modifier
-                        .size(68.dp)
+                        .size(66.dp)
                         .border(
-                            width = if (story.isSeen) 1.5.dp else 2.5.dp,
-                            brush = ringBrush,
+                            width = if (story.isSeen) 1.dp else 2.dp,
+                            color = ringColor,
                             shape = CircleShape
                         )
                         .padding(3.5.dp),
@@ -142,7 +132,7 @@ fun StoriesTray(
                 ) {
                     AsyncImage(
                         model = story.user.avatarUrl,
-                        contentDescription = "${story.user.name}'s story",
+                        contentDescription = "${story.user.name}'s moment",
                         contentScale = ContentScale.Crop,
                         modifier = Modifier
                             .fillMaxSize()
@@ -150,32 +140,17 @@ fun StoriesTray(
                     )
                 }
 
-                Spacer(modifier = Modifier.height(6.dp))
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.Center,
-                    modifier = Modifier.widthIn(max = 68.dp)
-                ) {
-                    if (story.isCloseFriendsOnly && !story.isSeen) {
-                        Box(
-                            modifier = Modifier
-                                .size(5.dp)
-                                .clip(CircleShape)
-                                .border(1.dp, CloseFriendsGreen, CircleShape)
-                        )
-                        Spacer(modifier = Modifier.width(3.dp))
-                    }
-                    Text(
-                        text = story.user.name.split(" ")[0],
-                        style = MaterialTheme.typography.labelMedium.copy(
-                            fontSize = 11.sp,
-                            fontWeight = if (!story.isSeen) FontWeight.SemiBold else FontWeight.Normal
-                        ),
-                        color = MaterialTheme.colorScheme.onSurface,
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis
-                    )
-                }
+                Spacer(modifier = Modifier.height(5.dp))
+                Text(
+                    text = story.user.name.split(" ")[0],
+                    style = MaterialTheme.typography.labelMedium.copy(
+                        fontSize = 11.sp,
+                        fontWeight = if (!story.isSeen) FontWeight.SemiBold else FontWeight.Normal
+                    ),
+                    color = if (!story.isSeen) PrimaryText else SecondaryText,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis
+                )
             }
         }
     }

@@ -6,6 +6,7 @@ import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.sp
 
+// Typography scaled for Circle: Android page titles 28-32sp, body 14-16sp, metadata 12-13sp, labels 10-11sp
 val Typography = Typography(
     displayLarge = TextStyle(
         fontFamily = FontFamily.Default,
@@ -17,9 +18,9 @@ val Typography = Typography(
     headlineMedium = TextStyle(
         fontFamily = FontFamily.Default,
         fontWeight = FontWeight.SemiBold,
-        fontSize = 24.sp,
-        lineHeight = 30.sp,
-        letterSpacing = (-0.2).sp
+        fontSize = 28.sp,
+        lineHeight = 34.sp,
+        letterSpacing = (-0.3).sp
     ),
     titleLarge = TextStyle(
         fontFamily = FontFamily.Default,
@@ -51,23 +52,23 @@ val Typography = Typography(
     ),
     labelLarge = TextStyle(
         fontFamily = FontFamily.Default,
-        fontWeight = FontWeight.SemiBold,
+        fontWeight = FontWeight.Medium,
         fontSize = 13.sp,
         lineHeight = 18.sp,
-        letterSpacing = 0.2.sp
+        letterSpacing = 0.15.sp
     ),
     labelMedium = TextStyle(
         fontFamily = FontFamily.Default,
-        fontWeight = FontWeight.Medium,
+        fontWeight = FontWeight.Normal,
         fontSize = 12.sp,
         lineHeight = 16.sp,
-        letterSpacing = 0.5.sp
+        letterSpacing = 0.2.sp
     ),
     labelSmall = TextStyle(
         fontFamily = FontFamily.Default,
-        fontWeight = FontWeight.SemiBold,
-        fontSize = 10.sp,
-        lineHeight = 14.sp,
-        letterSpacing = 1.sp
+        fontWeight = FontWeight.Medium,
+        fontSize = 11.sp,
+        lineHeight = 15.sp,
+        letterSpacing = 0.8.sp
     )
 )

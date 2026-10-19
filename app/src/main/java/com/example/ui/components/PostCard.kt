@@ -1,6 +1,5 @@
 package com.example.ui.components
 
-import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.spring
@@ -17,25 +16,24 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Bookmark
-import androidx.compose.material.icons.filled.ChatBubbleOutline
 import androidx.compose.material.icons.filled.LocationOn
+import androidx.compose.material.icons.filled.MoreHoriz
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.VolumeUp
 import androidx.compose.material.icons.outlined.BookmarkBorder
+import androidx.compose.material.icons.outlined.ChatBubbleOutline
 import androidx.compose.material.icons.outlined.Share
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontFamily
-import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -56,7 +54,6 @@ fun PostCard(
     onSaveClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    val haptic = LocalHapticFeedback.current
     val coroutineScope = rememberCoroutineScope()
     var showDoubleTapHeart by remember { mutableStateOf(false) }
     var isVideoPlaying by remember { mutableStateOf(false) }
@@ -64,46 +61,39 @@ fun PostCard(
     Card(
         modifier = modifier
             .fillMaxWidth()
-            .padding(horizontal = 14.dp, vertical = 8.dp)
+            .padding(horizontal = 16.dp, vertical = 6.dp)
             .testTag("post_card_${post.id}"),
-        shape = RoundedCornerShape(26.dp),
-        colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surface
-        ),
-        elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
+        shape = RoundedCornerShape(18.dp),
+        colors = CardDefaults.cardColors(containerColor = SurfaceColor),
+        border = androidx.compose.foundation.BorderStroke(1.dp, DividerOutline),
+        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
     ) {
         Column(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(vertical = 12.dp)
         ) {
-            // Header: Author Avatar, Name, Location/Time, Close Friends badge
+            // Header: Avatar, Name, Timestamp, Location, Menu
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(horizontal = 16.dp, vertical = 4.dp),
+                    .padding(horizontal = 14.dp, vertical = 2.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                // Author Avatar with ring
-                Box(
+                // Author Avatar
+                AsyncImage(
+                    model = post.author.avatarUrl,
+                    contentDescription = post.author.name,
+                    contentScale = ContentScale.Crop,
                     modifier = Modifier
-                        .size(42.dp)
+                        .size(38.dp)
+                        .clip(CircleShape)
                         .border(
-                            width = if (post.isCloseFriendsOnly) 2.dp else 1.dp,
-                            color = if (post.isCloseFriendsOnly) CloseFriendsGreen else MaterialTheme.colorScheme.outline,
+                            width = if (post.isCloseFriendsOnly) 1.5.dp else 1.dp,
+                            color = if (post.isCloseFriendsOnly) CloseFriendsGreen else DividerOutline,
                             shape = CircleShape
                         )
-                        .padding(2.5.dp)
-                ) {
-                    AsyncImage(
-                        model = post.author.avatarUrl,
-                        contentDescription = post.author.name,
-                        contentScale = ContentScale.Crop,
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .clip(CircleShape)
-                    )
-                }
+                )
 
                 Spacer(modifier = Modifier.width(10.dp))
 
@@ -111,14 +101,17 @@ fun PostCard(
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Text(
                             text = post.author.name,
-                            style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.SemiBold),
-                            color = MaterialTheme.colorScheme.onSurface
+                            style = MaterialTheme.typography.titleMedium.copy(
+                                fontWeight = FontWeight.SemiBold,
+                                fontSize = 15.sp
+                            ),
+                            color = PrimaryText
                         )
                         Spacer(modifier = Modifier.width(6.dp))
                         Text(
                             text = "• ${post.timestamp}",
-                            style = MaterialTheme.typography.labelMedium,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                            style = MaterialTheme.typography.labelSmall,
+                            color = SecondaryText
                         )
                     }
 
@@ -130,17 +123,16 @@ fun PostCard(
                             Icon(
                                 imageVector = Icons.Default.LocationOn,
                                 contentDescription = null,
-                                tint = CirclePurple,
+                                tint = SecondaryText,
                                 modifier = Modifier.size(11.dp)
                             )
-                            Spacer(modifier = Modifier.width(3.dp))
+                            Spacer(modifier = Modifier.width(2.dp))
                             Text(
                                 text = post.location,
                                 style = MaterialTheme.typography.labelSmall.copy(
                                     fontSize = 11.sp,
-                                    fontWeight = FontWeight.Medium
+                                    color = SecondaryText
                                 ),
-                                color = MaterialTheme.colorScheme.onSurfaceVariant,
                                 maxLines = 1,
                                 overflow = TextOverflow.Ellipsis
                             )
@@ -148,35 +140,31 @@ fun PostCard(
                     }
                 }
 
-                // Close Friends Badge
+                // Close friends pill or menu icon
                 if (post.isCloseFriendsOnly) {
                     Surface(
-                        shape = RoundedCornerShape(12.dp),
+                        shape = RoundedCornerShape(10.dp),
                         color = CloseFriendsGreenContainer,
-                        modifier = Modifier.padding(start = 6.dp)
+                        modifier = Modifier.padding(end = 4.dp)
                     ) {
-                        Row(
-                            modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Box(
-                                modifier = Modifier
-                                    .size(6.dp)
-                                    .clip(CircleShape)
-                                    .background(CloseFriendsGreen)
-                            )
-                            Spacer(modifier = Modifier.width(5.dp))
-                            Text(
-                                text = "Close Circle",
-                                style = MaterialTheme.typography.labelSmall.copy(
-                                    fontWeight = FontWeight.Bold,
-                                    fontSize = 10.sp
-                                ),
+                        Text(
+                            text = "Close friends",
+                            style = MaterialTheme.typography.labelSmall.copy(
+                                fontWeight = FontWeight.SemiBold,
+                                fontSize = 10.sp,
                                 color = CloseFriendsGreen
-                            )
-                        }
+                            ),
+                            modifier = Modifier.padding(horizontal = 7.dp, vertical = 3.dp)
+                        )
                     }
                 }
+
+                Icon(
+                    imageVector = Icons.Default.MoreHoriz,
+                    contentDescription = "Menu",
+                    tint = SecondaryText,
+                    modifier = Modifier.size(18.dp)
+                )
             }
 
             Spacer(modifier = Modifier.height(10.dp))
@@ -186,14 +174,14 @@ fun PostCard(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(horizontal = 12.dp)
-                    .clip(RoundedCornerShape(20.dp))
+                    .clip(RoundedCornerShape(16.dp))
                     .pointerInput(Unit) {
                         detectTapGestures(
                             onDoubleTap = {
                                 onReactionClick(ReactionType.HEART)
                                 showDoubleTapHeart = true
                                 coroutineScope.launch {
-                                    delay(850)
+                                    delay(750)
                                     showDoubleTapHeart = false
                                 }
                             }
@@ -206,8 +194,8 @@ fun PostCard(
                         Box(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .aspectRatio(1.05f)
-                                .background(DividerColor)
+                                .aspectRatio(1.1f)
+                                .background(SelectedBackground)
                         ) {
                             AsyncImage(
                                 model = post.mediaUrl,
@@ -216,10 +204,9 @@ fun PostCard(
                                 modifier = Modifier.fillMaxSize()
                             )
 
-                            // Aesthetic filter overlay badge if applied
                             if (post.filterName != "Original") {
                                 Surface(
-                                    shape = RoundedCornerShape(8.dp),
+                                    shape = RoundedCornerShape(6.dp),
                                     color = PureBlack.copy(alpha = 0.5f),
                                     modifier = Modifier
                                         .align(Alignment.BottomStart)
@@ -243,7 +230,7 @@ fun PostCard(
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .aspectRatio(1.1f)
-                                .background(DividerColor)
+                                .background(SelectedBackground)
                         ) {
                             AsyncImage(
                                 model = post.mediaUrl,
@@ -252,18 +239,17 @@ fun PostCard(
                                 modifier = Modifier.fillMaxSize()
                             )
 
-                            // Video overlay controls
                             Box(
                                 modifier = Modifier
                                     .fillMaxSize()
-                                    .background(Color.Black.copy(alpha = 0.2f)),
+                                    .background(Color.Black.copy(alpha = 0.15f)),
                                 contentAlignment = Alignment.Center
                             ) {
                                 Surface(
                                     shape = CircleShape,
-                                    color = PureBlack.copy(alpha = 0.65f),
+                                    color = PureBlack.copy(alpha = 0.6f),
                                     modifier = Modifier
-                                        .size(52.dp)
+                                        .size(48.dp)
                                         .clickable { isVideoPlaying = !isVideoPlaying }
                                 ) {
                                     Box(contentAlignment = Alignment.Center) {
@@ -271,33 +257,32 @@ fun PostCard(
                                             imageVector = Icons.Default.PlayArrow,
                                             contentDescription = "Play video",
                                             tint = PureWhite,
-                                            modifier = Modifier.size(30.dp)
+                                            modifier = Modifier.size(28.dp)
                                         )
                                     }
                                 }
                             }
 
-                            // Video badge (max 60s)
                             Surface(
-                                shape = RoundedCornerShape(12.dp),
-                                color = PureBlack.copy(alpha = 0.7f),
+                                shape = RoundedCornerShape(10.dp),
+                                color = PureBlack.copy(alpha = 0.65f),
                                 modifier = Modifier
                                     .align(Alignment.BottomEnd)
                                     .padding(10.dp)
                             ) {
                                 Row(
-                                    modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
+                                    modifier = Modifier.padding(horizontal = 7.dp, vertical = 3.dp),
                                     verticalAlignment = Alignment.CenterVertically
                                 ) {
                                     Icon(
                                         imageVector = Icons.Default.VolumeUp,
                                         contentDescription = null,
                                         tint = PureWhite,
-                                        modifier = Modifier.size(12.dp)
+                                        modifier = Modifier.size(11.dp)
                                     )
                                     Spacer(modifier = Modifier.width(4.dp))
                                     Text(
-                                        text = if (isVideoPlaying) "Playing 0:34" else "0:48 / 0:60",
+                                        text = if (isVideoPlaying) "Playing 0:28" else "0:44 (max 60s)",
                                         style = MaterialTheme.typography.labelSmall.copy(
                                             color = PureWhite,
                                             fontSize = 10.sp
@@ -308,20 +293,12 @@ fun PostCard(
                         }
                     }
 
+                    // Thought Card (Soft lavender surface #F0EDFC with restrained editorial styling)
                     PostType.THOUGHT -> {
-                        val thoughtGradients = listOf(
-                            listOf(Color(0xFF6C5CE7), Color(0xFFA29BFE)),
-                            listOf(Color(0xFF1E1B2E), Color(0xFF2D264A)),
-                            listOf(Color(0xFF0F172A), Color(0xFF1E293B)),
-                            listOf(Color(0xFF10B981), Color(0xFF059669))
-                        )
-                        val selectedGradient = thoughtGradients.getOrElse(post.thoughtGradientIndex) { thoughtGradients[0] }
-
                         Box(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .heightIn(min = 190.dp)
-                                .background(Brush.linearGradient(selectedGradient))
+                                .background(SelectedBackground)
                                 .padding(24.dp),
                             contentAlignment = Alignment.Center
                         ) {
@@ -331,28 +308,27 @@ fun PostCard(
                             ) {
                                 Text(
                                     text = "“",
-                                    fontSize = 44.sp,
-                                    lineHeight = 24.sp,
-                                    color = PureWhite.copy(alpha = 0.4f),
+                                    fontSize = 36.sp,
+                                    lineHeight = 20.sp,
+                                    color = BrandPrimary.copy(alpha = 0.5f),
                                     fontFamily = FontFamily.Serif
                                 )
                                 Spacer(modifier = Modifier.height(4.dp))
                                 Text(
                                     text = post.thoughtText ?: "",
-                                    style = MaterialTheme.typography.titleMedium.copy(
-                                        color = PureWhite,
-                                        fontSize = 17.sp,
-                                        lineHeight = 25.sp,
-                                        fontWeight = FontWeight.Medium
-                                    ),
-                                    fontStyle = FontStyle.Normal
+                                    style = MaterialTheme.typography.bodyLarge.copy(
+                                        color = PrimaryText,
+                                        fontSize = 16.sp,
+                                        lineHeight = 23.sp,
+                                        fontWeight = FontWeight.Normal
+                                    )
                                 )
-                                Spacer(modifier = Modifier.height(14.dp))
+                                Spacer(modifier = Modifier.height(10.dp))
                                 Text(
                                     text = "— ${post.author.name}",
                                     style = MaterialTheme.typography.labelSmall.copy(
-                                        color = PureWhite.copy(alpha = 0.7f),
-                                        letterSpacing = 1.2.sp
+                                        color = SecondaryText,
+                                        fontSize = 11.sp
                                     )
                                 )
                             }
@@ -368,15 +344,14 @@ fun PostCard(
                 ) {
                     Text(
                         text = "❤️",
-                        fontSize = 80.sp
+                        fontSize = 72.sp
                     )
                 }
             }
 
-            Spacer(modifier = Modifier.height(10.dp))
+            Spacer(modifier = Modifier.height(8.dp))
 
-            // Interactions Row:
-            // 3 Reactions ONLY: ❤️, 😂, 🔥 (No public like counts)
+            // Interactions Row: Private 3 Reactions (❤️, 😂, 🔥) + Comment & Share controls (NO like totals)
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -385,38 +360,32 @@ fun PostCard(
             ) {
                 // Reaction Pill Container
                 Surface(
-                    shape = RoundedCornerShape(20.dp),
-                    color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.7f),
-                    modifier = Modifier.height(38.dp)
+                    shape = RoundedCornerShape(16.dp),
+                    color = AppCanvas,
+                    border = androidx.compose.foundation.BorderStroke(1.dp, DividerOutline),
+                    modifier = Modifier.height(34.dp)
                 ) {
                     Row(
-                        modifier = Modifier.padding(horizontal = 6.dp),
+                        modifier = Modifier.padding(horizontal = 4.dp),
                         verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(4.dp)
+                        horizontalArrangement = Arrangement.spacedBy(2.dp)
                     ) {
                         ReactionType.entries.forEach { reactionType ->
                             val isSelected = post.userReaction == reactionType
-                            val scale by animateFloatAsState(
-                                targetValue = if (isSelected) 1.15f else 1.0f,
-                                animationSpec = spring(dampingRatio = Spring.DampingRatioMediumBouncy),
-                                label = "reactionScale"
-                            )
-
                             Box(
                                 modifier = Modifier
                                     .clip(CircleShape)
                                     .background(
-                                        if (isSelected) CirclePurpleContainer else Color.Transparent
+                                        if (isSelected) SelectedBackground else Color.Transparent
                                     )
                                     .clickable { onReactionClick(reactionType) }
-                                    .padding(horizontal = 8.dp, vertical = 4.dp)
+                                    .padding(horizontal = 7.dp, vertical = 3.dp)
                                     .testTag("reaction_${reactionType.name.lowercase()}_${post.id}"),
                                 contentAlignment = Alignment.Center
                             ) {
                                 Text(
                                     text = reactionType.emoji,
-                                    fontSize = 17.sp,
-                                    modifier = Modifier
+                                    fontSize = 15.sp
                                 )
                             }
                         }
@@ -425,102 +394,86 @@ fun PostCard(
 
                 Spacer(modifier = Modifier.width(10.dp))
 
-                // Comments Icon
+                // Comment Button
                 IconButton(
                     onClick = onCommentClick,
-                    modifier = Modifier.testTag("comment_button_${post.id}")
+                    modifier = Modifier
+                        .size(34.dp)
+                        .testTag("comment_button_${post.id}")
                 ) {
                     Icon(
-                        imageVector = Icons.Default.ChatBubbleOutline,
+                        imageVector = Icons.Outlined.ChatBubbleOutline,
                         contentDescription = "Comments",
-                        tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                        modifier = Modifier.size(22.dp)
+                        tint = SecondaryText,
+                        modifier = Modifier.size(20.dp)
+                    )
+                }
+
+                Spacer(modifier = Modifier.width(4.dp))
+
+                // Share Button (Quiet friend share)
+                IconButton(
+                    onClick = { /* Share to private friend */ },
+                    modifier = Modifier.size(34.dp)
+                ) {
+                    Icon(
+                        imageVector = Icons.Outlined.Share,
+                        contentDescription = "Share",
+                        tint = SecondaryText,
+                        modifier = Modifier.size(20.dp)
                     )
                 }
 
                 Spacer(modifier = Modifier.weight(1f))
 
-                // Save / Bookmark Icon
+                // Bookmark / Save
                 IconButton(
                     onClick = onSaveClick,
-                    modifier = Modifier.testTag("save_button_${post.id}")
+                    modifier = Modifier
+                        .size(34.dp)
+                        .testTag("save_button_${post.id}")
                 ) {
                     Icon(
                         imageVector = if (post.isSaved) Icons.Filled.Bookmark else Icons.Outlined.BookmarkBorder,
-                        contentDescription = "Save moment",
-                        tint = if (post.isSaved) CirclePurple else MaterialTheme.colorScheme.onSurfaceVariant,
-                        modifier = Modifier.size(22.dp)
+                        contentDescription = "Save",
+                        tint = if (post.isSaved) BrandPrimary else SecondaryText,
+                        modifier = Modifier.size(20.dp)
                     )
                 }
             }
 
-            // Reaction Summary: NO like counts, just human-centric circle summary
-            Text(
-                text = post.reactionSummary,
-                style = MaterialTheme.typography.labelMedium.copy(
-                    fontWeight = FontWeight.SemiBold,
-                    fontSize = 12.sp
-                ),
-                color = MaterialTheme.colorScheme.onSurface,
-                modifier = Modifier.padding(horizontal = 16.dp, vertical = 2.dp)
-            )
-
             // Caption
             if (post.caption.isNotBlank()) {
-                Spacer(modifier = Modifier.height(2.dp))
+                Spacer(modifier = Modifier.height(4.dp))
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(horizontal = 16.dp)
+                        .padding(horizontal = 14.dp)
                 ) {
                     Text(
                         text = "${post.author.username}  ${post.caption}",
-                        style = MaterialTheme.typography.bodyMedium.copy(lineHeight = 20.sp),
-                        color = MaterialTheme.colorScheme.onSurface,
+                        style = MaterialTheme.typography.bodyMedium.copy(
+                            fontSize = 14.sp,
+                            lineHeight = 20.sp,
+                            color = PrimaryText
+                        ),
                         maxLines = 3,
                         overflow = TextOverflow.Ellipsis
                     )
                 }
             }
 
-            // Tagged Friends
-            if (post.taggedFriends.isNotEmpty()) {
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 16.dp, vertical = 4.dp),
-                    horizontalArrangement = Arrangement.spacedBy(6.dp)
-                ) {
-                    post.taggedFriends.forEach { handle ->
-                        Surface(
-                            shape = RoundedCornerShape(8.dp),
-                            color = MaterialTheme.colorScheme.surfaceVariant
-                        ) {
-                            Text(
-                                text = "@$handle",
-                                style = MaterialTheme.typography.labelSmall.copy(
-                                    color = CirclePurple,
-                                    fontWeight = FontWeight.Medium
-                                ),
-                                modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
-                            )
-                        }
-                    }
-                }
-            }
-
-            // Comments Preview / Trigger
+            // Comments Preview
             if (post.comments.isNotEmpty()) {
                 Text(
                     text = "View ${if (post.comments.size == 1) "1 comment" else "all ${post.comments.size} comments"}",
                     style = MaterialTheme.typography.bodySmall.copy(
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        fontWeight = FontWeight.Medium
+                        color = SecondaryText,
+                        fontSize = 13.sp
                     ),
                     modifier = Modifier
                         .clickable { onCommentClick() }
-                        .padding(horizontal = 16.dp, vertical = 4.dp)
-                        .testTag("view_comments_${post.id}")
+                        .padding(horizontal = 14.dp, vertical = 2.dp)
                 )
             }
         }

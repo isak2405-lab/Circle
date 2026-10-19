@@ -4,21 +4,18 @@
     android:height="108dp"
     android:viewportWidth="108"
     android:viewportHeight="108">
-    <!-- Outer Glow Circle -->
+    <!-- Overlapping White Open Rings centered in 108x108 canvas -->
     <path
-        android:strokeColor="#6C5CE7"
-        android:strokeWidth="5"
+        android:strokeColor="#FFFFFF"
+        android:strokeWidth="7"
         android:strokeLineCap="round"
         android:fillColor="#00000000"
-        android:pathData="M54,26 A28,28 0 1,1 53.9,26 Z" />
+        android:pathData="M54,28 A26,26 0 0,1 80,54 A26,26 0 0,1 67,76.5" />
 
-    <!-- Inner Core Circle / Focus dot -->
     <path
-        android:fillColor="#A29BFE"
-        android:pathData="M54,44 A10,10 0 1,1 53.9,44 Z" />
-
-    <!-- Satellite Orbit Moments -->
-    <path
-        android:fillColor="#FFFFFF"
-        android:pathData="M78,36 A4,4 0 1,1 77.9,36 Z" />
+        android:strokeColor="#FFFFFF"
+        android:strokeWidth="7"
+        android:strokeLineCap="round"
+        android:fillColor="#00000000"
+        android:pathData="M54,80 A26,26 0 0,1 28,54 A26,26 0 0,1 41,31.5" />
 </vector>
