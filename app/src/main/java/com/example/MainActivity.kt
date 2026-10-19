@@ -34,7 +34,11 @@ class MainActivity : ComponentActivity() {
 }
 
 @Composable
-fun CircleApp(viewModel: CircleViewModel = viewModel()) {
+fun CircleApp(
+    viewModel: CircleViewModel = viewModel(
+        factory = CircleViewModel.provideFactory(androidx.compose.ui.platform.LocalContext.current)
+    )
+) {
     val currentScreen by viewModel.currentScreen.collectAsStateWithLifecycle()
     val conversations by viewModel.conversations.collectAsStateWithLifecycle()
     val unreadMessages = conversations.sumOf { it.unreadCount }
@@ -114,6 +118,11 @@ fun CircleApp(viewModel: CircleViewModel = viewModel()) {
                     SecurityVaultScreen(
                         viewModel = viewModel,
                         onBack = { viewModel.navigateBack() }
+                    )
+                }
+                is Screen.Splash -> {
+                    WavySplashScreen(
+                        onFinish = { viewModel.navigateTo(Screen.Feed) }
                     )
                 }
                 is Screen.Auth -> {

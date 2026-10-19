@@ -1,12 +1,20 @@
 package com.example.data.repository
 
+import com.example.data.local.*
 import com.example.data.model.*
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.launch
 
-class CircleRepository {
+class CircleRepository(
+    private val database: OrbynDatabase? = null
+) {
+    private val repositoryScope = CoroutineScope(Dispatchers.IO + SupervisorJob())
 
     // Current Authenticated User
     private val _currentUser = MutableStateFlow(
@@ -104,6 +112,64 @@ class CircleRepository {
 
     init {
         initSampleData()
+        observeDatabaseIfPresent()
+    }
+
+    private fun observeDatabaseIfPresent() {
+        if (database == null) return
+
+        repositoryScope.launch {
+            // Load and observe Room draft
+            database.draftDao().getDraft().collect { draftEntity ->
+                if (draftEntity != null) {
+                    val postType = try { PostType.valueOf(draftEntity.type) } catch (e: Exception) { PostType.PHOTO }
+                    _postDraft.value = PostDraft(
+                        caption = draftEntity.caption,
+                        type = postType,
+                        mediaUrl = draftEntity.mediaUrl,
+                        thoughtText = draftEntity.thoughtText,
+                        filterName = draftEntity.filterName,
+                        location = draftEntity.location,
+                        isCloseFriendsOnly = draftEntity.isCloseFriendsOnly
+                    )
+                }
+            }
+        }
+
+        repositoryScope.launch {
+            // Load and observe Room user
+            database.userDao().getCurrentUser().collect { userEntity ->
+                if (userEntity != null) {
+                    _currentUser.value = User(
+                        id = userEntity.id,
+                        name = userEntity.name,
+                        username = userEntity.username,
+                        avatarUrl = userEntity.avatarUrl,
+                        bio = userEntity.bio,
+                        isCloseFriend = userEntity.isCloseFriend,
+                        isOnline = userEntity.isOnline,
+                        statusText = userEntity.statusText
+                    )
+                }
+            }
+        }
+
+        repositoryScope.launch {
+            // Load and observe Room security settings
+            database.securityDao().getSecuritySettings().collect { sec ->
+                if (sec != null) {
+                    _securitySettings.value = SecuritySettings(
+                        isE2EEEnabled = sec.isE2EEEnabled,
+                        isAppLockEnabled = sec.isAppLockEnabled,
+                        isScreenshotProtectionEnabled = sec.isScreenshotProtectionEnabled,
+                        isAntiLeakWatermarkEnabled = sec.isAntiLeakWatermarkEnabled,
+                        ephemeralTimerMinutes = sec.ephemeralTimerMinutes,
+                        safetyFingerprint = sec.safetyFingerprint,
+                        encryptionProtocol = sec.encryptionProtocol
+                    )
+                }
+            }
+        }
     }
 
     private fun initSampleData() {
@@ -159,7 +225,7 @@ class CircleRepository {
                 author = friendsList[0], // Maya
                 type = PostType.PHOTO,
                 mediaUrl = "https://images.unsplash.com/photo-1492691527719-9d1e07e534b4?w=900&auto=format&fit=crop&q=80",
-                filterName = "Golden Hour",
+                filterName = "Golden",
                 caption = "sunday morning stillness. coffee tastes better when no one is in a rush.",
                 location = "Café Kitsuné, West Village",
                 taggedFriends = listOf("alexvance", "leochen"),
@@ -181,7 +247,7 @@ class CircleRepository {
                 author = friendsList[1], // Leo
                 type = PostType.VIDEO,
                 mediaUrl = "https://images.unsplash.com/photo-1470225620780-dba8ba36b745?w=900&auto=format&fit=crop&q=80",
-                filterName = "Dreamy Violet",
+                filterName = "Bloom",
                 caption = "sampled the rain hitting my fire escape and turned it into an ambient loop. 48 seconds of quiet.",
                 location = "Studio B, Greenpoint",
                 isCloseFriendsOnly = false,
@@ -200,7 +266,7 @@ class CircleRepository {
                 id = "p_3",
                 author = friendsList[2], // Elena
                 type = PostType.THOUGHT,
-                thoughtText = "the most comforting feeling is sitting in silence with people you don't feel pressured to entertain. that's what circle is for.",
+                thoughtText = "the most comforting feeling is sitting in silence with people you don't feel pressured to entertain. that's what orbyn is for.",
                 thoughtGradientIndex = 2,
                 caption = "",
                 location = "Home Library",
@@ -212,6 +278,7 @@ class CircleRepository {
                     ReactionType.FIRE to 1
                 ),
                 userReaction = null,
+                isSaved = true,
                 comments = listOf(
                     Comment("c_4", "p_3", friendsList[0], "felt this deeply today ❤️", "3h ago")
                 )
@@ -221,7 +288,7 @@ class CircleRepository {
                 author = friendsList[4], // Kai
                 type = PostType.PHOTO,
                 mediaUrl = "https://images.unsplash.com/photo-1542051841857-5f90071e7989?w=900&auto=format&fit=crop&q=80",
-                filterName = "Cyber Chrome",
+                filterName = "Film",
                 caption = "midnight convenience store run in shibuya. the ramen hit different at 2am.",
                 location = "Shibuya, Tokyo",
                 isCloseFriendsOnly = true,
@@ -326,15 +393,12 @@ class CircleRepository {
                     val existingUserReaction = post.userReaction
 
                     if (existingUserReaction == reaction) {
-                        // Un-react
                         currentReactions[reaction] = (currentReactions[reaction] ?: 1) - 1
                         post.copy(reactions = currentReactions, userReaction = null)
                     } else {
-                        // Decrement previous if any
                         if (existingUserReaction != null) {
                             currentReactions[existingUserReaction] = (currentReactions[existingUserReaction] ?: 1) - 1
                         }
-                        // Increment new
                         currentReactions[reaction] = (currentReactions[reaction] ?: 0) + 1
                         post.copy(reactions = currentReactions, userReaction = reaction)
                     }
@@ -361,6 +425,23 @@ class CircleRepository {
                 } else {
                     post
                 }
+            }
+        }
+
+        // Persist to internal Room SQLite database
+        database?.let { db ->
+            repositoryScope.launch {
+                db.commentDao().insertComment(
+                    CommentEntity(
+                        id = newComment.id,
+                        postId = newComment.postId,
+                        authorId = newComment.author.id,
+                        authorName = newComment.author.name,
+                        authorAvatarUrl = newComment.author.avatarUrl,
+                        text = newComment.text,
+                        timestamp = newComment.timestamp
+                    )
+                )
             }
         }
     }
@@ -405,16 +486,68 @@ class CircleRepository {
             comments = emptyList()
         )
         _posts.update { listOf(newPost) + it }
-        // Clear draft upon successful publish
         _postDraft.value = null
+
+        // Persist internally to Room SQLite database
+        database?.let { db ->
+            repositoryScope.launch {
+                db.postDao().insertPost(
+                    PostEntity(
+                        id = newPost.id,
+                        authorId = newPost.author.id,
+                        authorName = newPost.author.name,
+                        authorUsername = newPost.author.username,
+                        authorAvatarUrl = newPost.author.avatarUrl,
+                        type = newPost.type.name,
+                        mediaUrl = newPost.mediaUrl,
+                        thoughtText = newPost.thoughtText,
+                        thoughtGradientIndex = newPost.thoughtGradientIndex,
+                        filterName = newPost.filterName,
+                        caption = newPost.caption,
+                        location = newPost.location,
+                        taggedFriendsRaw = newPost.taggedFriends.joinToString(","),
+                        isCloseFriendsOnly = newPost.isCloseFriendsOnly,
+                        timestamp = newPost.timestamp,
+                        heartCount = 0,
+                        laughCount = 0,
+                        fireCount = 0,
+                        userReaction = null,
+                        isSaved = false
+                    )
+                )
+                db.draftDao().clearDraft()
+            }
+        }
     }
 
     fun saveDraft(draft: PostDraft) {
         _postDraft.value = draft
+        // Persist draft to internal Room SQLite database
+        database?.let { db ->
+            repositoryScope.launch {
+                db.draftDao().insertDraft(
+                    DraftEntity(
+                        id = 1,
+                        caption = draft.caption,
+                        type = draft.type.name,
+                        mediaUrl = draft.mediaUrl,
+                        thoughtText = draft.thoughtText,
+                        filterName = draft.filterName,
+                        location = draft.location,
+                        isCloseFriendsOnly = draft.isCloseFriendsOnly
+                    )
+                )
+            }
+        }
     }
 
     fun clearDraft() {
         _postDraft.value = null
+        database?.let { db ->
+            repositoryScope.launch {
+                db.draftDao().clearDraft()
+            }
+        }
     }
 
     fun markStorySeen(userId: String) {
@@ -473,6 +606,25 @@ class CircleRepository {
                 } else conv
             }
         }
+
+        // Persist message to Room
+        database?.let { db ->
+            repositoryScope.launch {
+                db.messageDao().insertMessage(
+                    MessageEntity(
+                        id = newMsg.id,
+                        conversationId = conversationId,
+                        senderId = newMsg.senderId,
+                        text = newMsg.text,
+                        mediaUrl = newMsg.mediaUrl,
+                        isVoiceNote = newMsg.isVoiceNote,
+                        voiceDurationSec = newMsg.voiceDurationSec,
+                        timestamp = newMsg.timestamp,
+                        isRead = newMsg.isRead
+                    )
+                )
+            }
+        }
     }
 
     fun simulateFriendReply(conversationId: String) {
@@ -502,17 +654,54 @@ class CircleRepository {
                 } else c
             }
         }
+
+        database?.let { db ->
+            repositoryScope.launch {
+                db.messageDao().insertMessage(
+                    MessageEntity(
+                        id = reply.id,
+                        conversationId = conversationId,
+                        senderId = reply.senderId,
+                        text = reply.text,
+                        mediaUrl = reply.mediaUrl,
+                        isVoiceNote = reply.isVoiceNote,
+                        voiceDurationSec = reply.voiceDurationSec,
+                        timestamp = reply.timestamp,
+                        isRead = reply.isRead
+                    )
+                )
+            }
+        }
     }
 
     fun updateProfile(name: String, username: String, bio: String, avatarUrl: String, statusText: String) {
-        _currentUser.update {
-            it.copy(
-                name = name.trim(),
-                username = username.trim().removePrefix("@"),
-                bio = bio.trim(),
-                avatarUrl = avatarUrl,
-                statusText = statusText.trim().ifBlank { null }
-            )
+        val updated = User(
+            id = "u_me",
+            name = name.trim(),
+            username = username.trim().removePrefix("@"),
+            bio = bio.trim(),
+            avatarUrl = avatarUrl,
+            statusText = statusText.trim().ifBlank { null },
+            isCloseFriend = true,
+            isOnline = true
+        )
+        _currentUser.value = updated
+
+        database?.let { db ->
+            repositoryScope.launch {
+                db.userDao().insertUser(
+                    UserEntity(
+                        id = updated.id,
+                        name = updated.name,
+                        username = updated.username,
+                        avatarUrl = updated.avatarUrl,
+                        bio = updated.bio,
+                        statusText = updated.statusText,
+                        isCloseFriend = updated.isCloseFriend,
+                        isOnline = updated.isOnline
+                    )
+                )
+            }
         }
     }
 
@@ -535,6 +724,22 @@ class CircleRepository {
     // Security Controls
     fun updateSecuritySettings(newSettings: SecuritySettings) {
         _securitySettings.value = newSettings
+        database?.let { db ->
+            repositoryScope.launch {
+                db.securityDao().insertSecuritySettings(
+                    SecurityEntity(
+                        id = 1,
+                        isE2EEEnabled = newSettings.isE2EEEnabled,
+                        isAppLockEnabled = newSettings.isAppLockEnabled,
+                        isScreenshotProtectionEnabled = newSettings.isScreenshotProtectionEnabled,
+                        isAntiLeakWatermarkEnabled = newSettings.isAntiLeakWatermarkEnabled,
+                        ephemeralTimerMinutes = newSettings.ephemeralTimerMinutes,
+                        safetyFingerprint = newSettings.safetyFingerprint,
+                        encryptionProtocol = newSettings.encryptionProtocol
+                    )
+                )
+            }
+        }
     }
 
     // Feed Options Controls
@@ -593,4 +798,3 @@ class CircleRepository {
         _activeCall.value = null
     }
 }
-

@@ -77,10 +77,10 @@ fun AuthScreen(
 
             Spacer(modifier = Modifier.height(14.dp))
 
-            // Lowercase wordmark "circle." with purple dot
+            // Lowercase wordmark "orbyn." with purple dot
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Text(
-                    text = "circle",
+                    text = "orbyn",
                     style = MaterialTheme.typography.displayLarge.copy(
                         fontWeight = FontWeight.Bold,
                         letterSpacing = (-1.2).sp,
@@ -100,9 +100,9 @@ fun AuthScreen(
 
             Spacer(modifier = Modifier.height(4.dp))
 
-            // Tagline: Your people. Your moments.
+            // Tagline: Your inner orbit. Less noise. Closer circle.
             Text(
-                text = "Your people. Your moments.",
+                text = "Your inner orbit. Less noise. Closer circle.",
                 style = MaterialTheme.typography.bodyMedium.copy(
                     fontWeight = FontWeight.Medium,
                     fontSize = 14.sp
@@ -244,7 +244,7 @@ fun AuthScreen(
                     .testTag("submit_auth_button")
             ) {
                 Text(
-                    text = if (isSignUp) "Create circle" else "Enter circle",
+                    text = if (isSignUp) "Join Orbyn" else "Enter Orbyn",
                     style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.SemiBold),
                     color = PureWhite
                 )
@@ -257,7 +257,7 @@ fun AuthScreen(
                 modifier = Modifier.testTag("toggle_auth_mode_button")
             ) {
                 Text(
-                    text = if (isSignUp) "Already have a circle? Sign in" else "New here? Set up your circle",
+                    text = if (isSignUp) "Already have an account? Sign in" else "New here? Set up your orbit",
                     color = BrandPrimary,
                     style = MaterialTheme.typography.bodySmall.copy(fontWeight = FontWeight.Medium)
                 )

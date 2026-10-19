@@ -1,6 +1,6 @@
 {
-  "name": "Circle",
-  "description": "A minimal, aesthetic social app for close friends. Real moments, no like counts, and zero ads.",
+  "name": "ORBYN",
+  "description": "Your inner orbit. Less noise. Closer circle.",
   "requestFramePermissions": [],
   "majorCapabilities": [
     "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"

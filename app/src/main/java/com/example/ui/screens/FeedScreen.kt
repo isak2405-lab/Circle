@@ -106,7 +106,7 @@ fun FeedScreen(
                         Spacer(modifier = Modifier.width(8.dp))
 
                         Text(
-                            text = "circle",
+                            text = "orbyn",
                             style = MaterialTheme.typography.titleLarge.copy(
                                 fontWeight = FontWeight.Bold,
                                 letterSpacing = (-0.5).sp,
@@ -179,7 +179,7 @@ fun FeedScreen(
                     .testTag("feed_list"),
                 contentPadding = PaddingValues(bottom = 90.dp)
             ) {
-                // Header: "Your circle." + Subtitle: "Real life looks good on you."
+                // Header: "Your orbit." + Subtitle: "Less noise. Closer circle."
                 item {
                     Column(
                         modifier = Modifier
@@ -188,7 +188,7 @@ fun FeedScreen(
                     ) {
                         Row(verticalAlignment = Alignment.CenterVertically) {
                             Text(
-                                text = "Your circle",
+                                text = "Your orbit",
                                 style = MaterialTheme.typography.headlineMedium.copy(
                                     fontWeight = FontWeight.Bold,
                                     fontSize = 28.sp,
@@ -207,7 +207,7 @@ fun FeedScreen(
                         }
                         Spacer(modifier = Modifier.height(2.dp))
                         Text(
-                            text = "Real life looks good on you.",
+                            text = "Less noise. Closer circle.",
                             style = MaterialTheme.typography.bodyMedium.copy(fontSize = 14.sp),
                             color = SecondaryText
                         )

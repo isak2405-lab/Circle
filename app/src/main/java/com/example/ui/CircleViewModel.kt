@@ -19,6 +19,7 @@ sealed class Screen {
     data class ChatDetail(val conversationId: String) : Screen()
     data object Call : Screen()
     data object SecurityVault : Screen()
+    data object Splash : Screen()
     data object Auth : Screen()
 }
 
@@ -26,9 +27,9 @@ class CircleViewModel(
     val repository: CircleRepository = CircleRepository()
 ) : ViewModel() {
 
-    private val _screenStack = MutableStateFlow<List<Screen>>(listOf(Screen.Feed))
+    private val _screenStack = MutableStateFlow<List<Screen>>(listOf(Screen.Splash))
     val currentScreen: StateFlow<Screen> = _screenStack.map { it.lastOrNull() ?: Screen.Feed }
-        .stateIn(viewModelScope, SharingStarted.Eagerly, Screen.Feed)
+        .stateIn(viewModelScope, SharingStarted.Eagerly, Screen.Splash)
 
     val currentUser = repository.currentUser
     val isAuthenticated = repository.isAuthenticated
@@ -268,4 +269,16 @@ class CircleViewModel(
 
     // Security Settings Controls
     fun updateSecuritySettings(settings: SecuritySettings) = repository.updateSecuritySettings(settings)
+
+    companion object {
+        fun provideFactory(context: android.content.Context): androidx.lifecycle.ViewModelProvider.Factory =
+            object : androidx.lifecycle.ViewModelProvider.Factory {
+                @Suppress("UNCHECKED_CAST")
+                override fun <T : androidx.lifecycle.ViewModel> create(modelClass: Class<T>): T {
+                    val db = com.example.data.local.OrbynDatabase.getInstance(context)
+                    val repo = com.example.data.repository.CircleRepository(db)
+                    return CircleViewModel(repo) as T
+                }
+            }
+    }
 }

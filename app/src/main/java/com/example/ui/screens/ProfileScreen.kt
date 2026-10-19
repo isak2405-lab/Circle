@@ -167,7 +167,7 @@ fun ProfileScreen(
             )
 
             Text(
-                text = "Your people. Your moments.",
+                text = "Your inner orbit.",
                 style = MaterialTheme.typography.labelSmall.copy(
                     color = BrandPrimary,
                     fontSize = 11.sp,
@@ -363,7 +363,7 @@ fun ProfileScreen(
                     contentAlignment = Alignment.Center
                 ) {
                     Text(
-                        text = "Demo Mode • Circle v1.0 • Your people. Your moments.",
+                        text = "Demo Mode • ORBYN • Less noise. Closer circle.",
                         style = MaterialTheme.typography.labelSmall.copy(
                             fontSize = 11.sp,
                             color = SecondaryText
