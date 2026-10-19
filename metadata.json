@@ -1,0 +1,8 @@
+{
+  "name": "Circle",
+  "description": "A minimal, aesthetic social app for close friends. Real moments, no like counts, and zero ads.",
+  "requestFramePermissions": [],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}
