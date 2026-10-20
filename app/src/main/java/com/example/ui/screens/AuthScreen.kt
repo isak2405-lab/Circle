@@ -186,13 +186,31 @@ fun AuthScreen(
                 }
                 Spacer(modifier = Modifier.height(14.dp))
 
+                val authInputColors = OutlinedTextFieldDefaults.colors(
+                    focusedTextColor = MaterialTheme.colorScheme.onSurface,
+                    unfocusedTextColor = MaterialTheme.colorScheme.onSurface,
+                    focusedLabelColor = BrandPrimary,
+                    unfocusedLabelColor = SecondaryText,
+                    focusedBorderColor = BrandPrimary,
+                    unfocusedBorderColor = DividerOutline,
+                    cursorColor = BrandPrimary,
+                    focusedContainerColor = SurfaceColor,
+                    unfocusedContainerColor = SurfaceColor
+                )
+                val authTextStyle = MaterialTheme.typography.bodyMedium.copy(
+                    color = MaterialTheme.colorScheme.onSurface,
+                    fontWeight = FontWeight.Medium
+                )
+
                 OutlinedTextField(
                     value = name,
                     onValueChange = { name = it },
                     label = { Text("Your name") },
                     leadingIcon = { Icon(Icons.Default.Person, contentDescription = null, tint = SecondaryText) },
-                    modifier = Modifier.fillMaxWidth(),
+                    modifier = Modifier.fillMaxWidth().testTag("auth_name_input"),
                     shape = RoundedCornerShape(11.dp),
+                    colors = authInputColors,
+                    textStyle = authTextStyle,
                     singleLine = true
                 )
                 Spacer(modifier = Modifier.height(10.dp))
@@ -202,20 +220,40 @@ fun AuthScreen(
                     onValueChange = { username = it },
                     label = { Text("Username") },
                     leadingIcon = { Text("@", fontWeight = FontWeight.Bold, color = SecondaryText, modifier = Modifier.padding(start = 12.dp)) },
-                    modifier = Modifier.fillMaxWidth(),
+                    modifier = Modifier.fillMaxWidth().testTag("auth_username_input"),
                     shape = RoundedCornerShape(11.dp),
+                    colors = authInputColors,
+                    textStyle = authTextStyle,
                     singleLine = true
                 )
                 Spacer(modifier = Modifier.height(10.dp))
             }
+
+            val defaultAuthInputColors = OutlinedTextFieldDefaults.colors(
+                focusedTextColor = MaterialTheme.colorScheme.onSurface,
+                unfocusedTextColor = MaterialTheme.colorScheme.onSurface,
+                focusedLabelColor = BrandPrimary,
+                unfocusedLabelColor = SecondaryText,
+                focusedBorderColor = BrandPrimary,
+                unfocusedBorderColor = DividerOutline,
+                cursorColor = BrandPrimary,
+                focusedContainerColor = SurfaceColor,
+                unfocusedContainerColor = SurfaceColor
+            )
+            val defaultAuthTextStyle = MaterialTheme.typography.bodyMedium.copy(
+                color = MaterialTheme.colorScheme.onSurface,
+                fontWeight = FontWeight.Medium
+            )
 
             OutlinedTextField(
                 value = email,
                 onValueChange = { email = it },
                 label = { Text("Email") },
                 leadingIcon = { Icon(Icons.Default.Email, contentDescription = null, tint = SecondaryText) },
-                modifier = Modifier.fillMaxWidth(),
+                modifier = Modifier.fillMaxWidth().testTag("auth_email_input"),
                 shape = RoundedCornerShape(11.dp),
+                colors = defaultAuthInputColors,
+                textStyle = defaultAuthTextStyle,
                 singleLine = true
             )
 
@@ -227,8 +265,10 @@ fun AuthScreen(
                 label = { Text("Password") },
                 leadingIcon = { Icon(Icons.Default.Lock, contentDescription = null, tint = SecondaryText) },
                 visualTransformation = PasswordVisualTransformation(),
-                modifier = Modifier.fillMaxWidth(),
+                modifier = Modifier.fillMaxWidth().testTag("auth_password_input"),
                 shape = RoundedCornerShape(11.dp),
+                colors = defaultAuthInputColors,
+                textStyle = defaultAuthTextStyle,
                 singleLine = true
             )
 

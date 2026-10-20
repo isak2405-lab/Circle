@@ -30,9 +30,7 @@ import coil.compose.AsyncImage
 import com.example.data.model.ChatMessage
 import com.example.data.model.Conversation
 import com.example.ui.CircleViewModel
-import com.example.ui.theme.CirclePurple
-import com.example.ui.theme.CloseFriendsGreen
-import com.example.ui.theme.PureWhite
+import com.example.ui.theme.*
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -365,13 +363,22 @@ fun ChatDetailScreen(
                     OutlinedTextField(
                         value = messageInput,
                         onValueChange = { messageInput = it },
-                        placeholder = { Text("Message ${conv.friend.name.split(" ")[0]}...", fontSize = 14.sp) },
+                        placeholder = { Text("Message ${conv.friend.name.split(" ")[0]}...", fontSize = 14.sp, color = PlaceholderHint) },
                         modifier = Modifier
                             .weight(1f)
                             .testTag("chat_message_input"),
                         shape = RoundedCornerShape(24.dp),
                         colors = OutlinedTextFieldDefaults.colors(
-                            focusedBorderColor = CirclePurple
+                            focusedTextColor = MaterialTheme.colorScheme.onSurface,
+                            unfocusedTextColor = MaterialTheme.colorScheme.onSurface,
+                            focusedBorderColor = CirclePurple,
+                            unfocusedBorderColor = MaterialTheme.colorScheme.outline,
+                            cursorColor = CirclePurple,
+                            focusedContainerColor = MaterialTheme.colorScheme.surface,
+                            unfocusedContainerColor = MaterialTheme.colorScheme.surface
+                        ),
+                        textStyle = MaterialTheme.typography.bodyMedium.copy(
+                            color = MaterialTheme.colorScheme.onSurface
                         ),
                         maxLines = 4
                     )

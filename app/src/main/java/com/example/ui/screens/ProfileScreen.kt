@@ -1,5 +1,8 @@
 package com.example.ui.screens
 
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.PickVisualMediaRequest
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -9,8 +12,10 @@ import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ExitToApp
 import androidx.compose.material.icons.filled.*
@@ -121,21 +126,44 @@ fun ProfileScreen(
                 .padding(horizontal = 20.dp, vertical = 14.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            // Avatar
+            // Avatar with edit affordance
             Box(
                 modifier = Modifier
-                    .size(76.dp)
-                    .border(1.5.dp, BrandPrimary, CircleShape)
-                    .padding(3.dp)
+                    .size(78.dp)
+                    .clickable { showEditProfileDialog = true }
+                    .testTag("profile_avatar_image"),
+                contentAlignment = Alignment.BottomEnd
             ) {
-                AsyncImage(
-                    model = currentUser.avatarUrl,
-                    contentDescription = currentUser.name,
-                    contentScale = ContentScale.Crop,
+                Box(
                     modifier = Modifier
                         .fillMaxSize()
+                        .border(1.5.dp, BrandPrimary, CircleShape)
+                        .padding(3.dp)
+                ) {
+                    AsyncImage(
+                        model = currentUser.avatarUrl,
+                        contentDescription = currentUser.name,
+                        contentScale = ContentScale.Crop,
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .clip(CircleShape)
+                    )
+                }
+                Box(
+                    modifier = Modifier
+                        .size(24.dp)
                         .clip(CircleShape)
-                )
+                        .background(BrandPrimary)
+                        .border(1.5.dp, SurfaceColor, CircleShape),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Edit,
+                        contentDescription = "Edit photo",
+                        tint = PureWhite,
+                        modifier = Modifier.size(12.dp)
+                    )
+                }
             }
 
             Spacer(modifier = Modifier.width(20.dp))
@@ -459,6 +487,15 @@ private fun SettingsSectionCard(
     }
 }
 
+private val defaultAvatarPresets = listOf(
+    "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=400&auto=format&fit=crop&q=80",
+    "https://images.unsplash.com/photo-1517841905240-472988babdf9?w=400&auto=format&fit=crop&q=80",
+    "https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?w=400&auto=format&fit=crop&q=80",
+    "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&auto=format&fit=crop&q=80",
+    "https://images.unsplash.com/photo-1524504388940-b1c1722653e1?w=400&auto=format&fit=crop&q=80",
+    "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=400&auto=format&fit=crop&q=80"
+)
+
 @Composable
 private fun EditProfileDialog(
     name: String,
@@ -475,40 +512,215 @@ private fun EditProfileDialog(
     var editStatus by remember { mutableStateOf(status) }
     var editAvatar by remember { mutableStateOf(avatarUrl) }
 
+    val photoPickerLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.PickVisualMedia()
+    ) { uri ->
+        if (uri != null) {
+            editAvatar = uri.toString()
+        }
+    }
+
+    val inputColors = OutlinedTextFieldDefaults.colors(
+        focusedTextColor = MaterialTheme.colorScheme.onSurface,
+        unfocusedTextColor = MaterialTheme.colorScheme.onSurface,
+        focusedLabelColor = BrandPrimary,
+        unfocusedLabelColor = SecondaryText,
+        focusedBorderColor = BrandPrimary,
+        unfocusedBorderColor = DividerOutline,
+        cursorColor = BrandPrimary,
+        focusedContainerColor = MaterialTheme.colorScheme.surface,
+        unfocusedContainerColor = MaterialTheme.colorScheme.surface
+    )
+    val inputTextStyle = MaterialTheme.typography.bodyMedium.copy(
+        color = MaterialTheme.colorScheme.onSurface,
+        fontWeight = FontWeight.Normal
+    )
+
     AlertDialog(
         onDismissRequest = onDismiss,
         title = {
             Text(
                 "Edit profile",
                 fontWeight = FontWeight.Bold,
-                color = PrimaryText
+                color = MaterialTheme.colorScheme.onSurface
             )
         },
         text = {
-            Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .verticalScroll(rememberScrollState()),
+                verticalArrangement = Arrangement.spacedBy(12.dp),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                // Profile Picture with live preview & pick button
+                Box(
+                    modifier = Modifier
+                        .size(92.dp)
+                        .clickable {
+                            photoPickerLauncher.launch(
+                                PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)
+                            )
+                        }
+                        .testTag("edit_avatar_picker_button"),
+                    contentAlignment = Alignment.BottomEnd
+                ) {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .clip(CircleShape)
+                            .border(2.dp, BrandPrimary, CircleShape)
+                            .padding(3.dp)
+                    ) {
+                        AsyncImage(
+                            model = editAvatar,
+                            contentDescription = "Edit Profile Picture",
+                            contentScale = ContentScale.Crop,
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .clip(CircleShape)
+                        )
+                    }
+
+                    Surface(
+                        shape = CircleShape,
+                        color = BrandPrimary,
+                        border = androidx.compose.foundation.BorderStroke(2.dp, SurfaceColor),
+                        modifier = Modifier.size(30.dp)
+                    ) {
+                        Box(contentAlignment = Alignment.Center) {
+                            Icon(
+                                imageVector = Icons.Default.CameraAlt,
+                                contentDescription = "Change photo",
+                                tint = PureWhite,
+                                modifier = Modifier.size(16.dp)
+                            )
+                        }
+                    }
+                }
+
+                // Pick from Gallery CTA
+                TextButton(
+                    onClick = {
+                        photoPickerLauncher.launch(
+                            PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)
+                        )
+                    },
+                    modifier = Modifier.testTag("choose_gallery_photo_button")
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.PhotoLibrary,
+                        contentDescription = null,
+                        tint = BrandPrimary,
+                        modifier = Modifier.size(16.dp)
+                    )
+                    Spacer(modifier = Modifier.width(6.dp))
+                    Text(
+                        "Upload from Gallery",
+                        color = BrandPrimary,
+                        style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.SemiBold)
+                    )
+                }
+
+                // Avatar Presets Tray
+                Column(modifier = Modifier.fillMaxWidth()) {
+                    Text(
+                        text = "Or choose avatar preset:",
+                        style = MaterialTheme.typography.labelSmall.copy(
+                            color = SecondaryText,
+                            fontWeight = FontWeight.Medium
+                        ),
+                        modifier = Modifier.padding(bottom = 6.dp)
+                    )
+                    LazyRow(
+                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        items(defaultAvatarPresets) { presetUrl ->
+                            val isSelected = editAvatar == presetUrl
+                            AsyncImage(
+                                model = presetUrl,
+                                contentDescription = null,
+                                contentScale = ContentScale.Crop,
+                                modifier = Modifier
+                                    .size(44.dp)
+                                    .clip(CircleShape)
+                                    .border(
+                                        width = if (isSelected) 2.5.dp else 1.dp,
+                                        color = if (isSelected) BrandPrimary else DividerOutline,
+                                        shape = CircleShape
+                                    )
+                                    .clickable { editAvatar = presetUrl }
+                            )
+                        }
+                    }
+                }
+
+                HorizontalDivider(color = DividerOutline, modifier = Modifier.padding(vertical = 4.dp))
+
+                // Name Field
                 OutlinedTextField(
                     value = editName,
                     onValueChange = { editName = it },
                     label = { Text("Name") },
                     singleLine = true,
                     shape = RoundedCornerShape(10.dp),
-                    modifier = Modifier.fillMaxWidth()
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .testTag("edit_name_input"),
+                    colors = inputColors,
+                    textStyle = inputTextStyle
                 )
+
+                // Username Field
                 OutlinedTextField(
                     value = editUsername,
                     onValueChange = { editUsername = it },
                     label = { Text("Username") },
+                    leadingIcon = {
+                        Text(
+                            "@",
+                            fontWeight = FontWeight.Bold,
+                            color = SecondaryText,
+                            modifier = Modifier.padding(start = 12.dp)
+                        )
+                    },
                     singleLine = true,
                     shape = RoundedCornerShape(10.dp),
-                    modifier = Modifier.fillMaxWidth()
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .testTag("edit_username_input"),
+                    colors = inputColors,
+                    textStyle = inputTextStyle
                 )
+
+                // Status Field
+                OutlinedTextField(
+                    value = editStatus,
+                    onValueChange = { editStatus = it },
+                    label = { Text("Status text") },
+                    placeholder = { Text("e.g. 🎧 listening to music", color = PlaceholderHint) },
+                    singleLine = true,
+                    shape = RoundedCornerShape(10.dp),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .testTag("edit_status_input"),
+                    colors = inputColors,
+                    textStyle = inputTextStyle
+                )
+
+                // Bio Field
                 OutlinedTextField(
                     value = editBio,
                     onValueChange = { editBio = it },
                     label = { Text("Bio") },
                     maxLines = 3,
                     shape = RoundedCornerShape(10.dp),
-                    modifier = Modifier.fillMaxWidth()
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .testTag("edit_bio_input"),
+                    colors = inputColors,
+                    textStyle = inputTextStyle
                 )
             }
         },
@@ -516,13 +728,17 @@ private fun EditProfileDialog(
             Button(
                 onClick = { onSave(editName, editUsername, editBio, editStatus, editAvatar) },
                 colors = ButtonDefaults.buttonColors(containerColor = BrandPrimary),
-                shape = RoundedCornerShape(10.dp)
+                shape = RoundedCornerShape(10.dp),
+                modifier = Modifier.testTag("edit_profile_save_button")
             ) {
-                Text("Save", color = PureWhite)
+                Text("Save", color = PureWhite, fontWeight = FontWeight.SemiBold)
             }
         },
         dismissButton = {
-            TextButton(onClick = onDismiss) {
+            TextButton(
+                onClick = onDismiss,
+                modifier = Modifier.testTag("edit_profile_cancel_button")
+            ) {
                 Text("Cancel", color = SecondaryText)
             }
         }

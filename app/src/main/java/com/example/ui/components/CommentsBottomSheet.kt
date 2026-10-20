@@ -23,8 +23,7 @@ import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
 import com.example.data.model.Comment
 import com.example.data.model.Post
-import com.example.ui.theme.CirclePurple
-import com.example.ui.theme.PureWhite
+import com.example.ui.theme.*
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -173,14 +172,22 @@ fun CommentsBottomSheet(
                         commentText = it
                         if (commentWarning != null) commentWarning = null
                     },
-                    placeholder = { Text("Add a comment for the circle...", fontSize = 14.sp) },
+                    placeholder = { Text("Add a comment for the circle...", fontSize = 14.sp, color = PlaceholderHint) },
                     modifier = Modifier
                         .weight(1f)
                         .testTag("comment_input_field"),
                     shape = RoundedCornerShape(24.dp),
                     colors = OutlinedTextFieldDefaults.colors(
+                        focusedTextColor = MaterialTheme.colorScheme.onSurface,
+                        unfocusedTextColor = MaterialTheme.colorScheme.onSurface,
                         focusedBorderColor = CirclePurple,
-                        unfocusedBorderColor = MaterialTheme.colorScheme.outline
+                        unfocusedBorderColor = MaterialTheme.colorScheme.outline,
+                        cursorColor = CirclePurple,
+                        focusedContainerColor = MaterialTheme.colorScheme.surface,
+                        unfocusedContainerColor = MaterialTheme.colorScheme.surface
+                    ),
+                    textStyle = MaterialTheme.typography.bodyMedium.copy(
+                        color = MaterialTheme.colorScheme.onSurface
                     ),
                     maxLines = 3
                 )

@@ -28,12 +28,7 @@ import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
 import com.example.data.model.PostType
 import com.example.ui.CircleViewModel
-import com.example.ui.theme.BrandPrimary
-import com.example.ui.theme.CirclePurple
-import com.example.ui.theme.CloseFriendsGreen
-import com.example.ui.theme.CloseFriendsGreenContainer
-import com.example.ui.theme.PrimaryText
-import com.example.ui.theme.PureWhite
+import com.example.ui.theme.*
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -394,6 +389,21 @@ fun CreatePostScreen(
 
             Spacer(modifier = Modifier.height(18.dp))
 
+            val postFieldColors = OutlinedTextFieldDefaults.colors(
+                focusedTextColor = MaterialTheme.colorScheme.onSurface,
+                unfocusedTextColor = MaterialTheme.colorScheme.onSurface,
+                focusedLabelColor = CirclePurple,
+                unfocusedLabelColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                focusedBorderColor = CirclePurple,
+                unfocusedBorderColor = MaterialTheme.colorScheme.outline,
+                cursorColor = CirclePurple,
+                focusedPlaceholderColor = PlaceholderHint,
+                unfocusedPlaceholderColor = PlaceholderHint
+            )
+            val postFieldTextStyle = MaterialTheme.typography.bodyMedium.copy(
+                color = MaterialTheme.colorScheme.onSurface
+            )
+
             // Caption Field
             OutlinedTextField(
                 value = caption,
@@ -405,9 +415,8 @@ fun CreatePostScreen(
                     .testTag("caption_input_field"),
                 shape = RoundedCornerShape(18.dp),
                 minLines = 2,
-                colors = OutlinedTextFieldDefaults.colors(
-                    focusedBorderColor = CirclePurple
-                )
+                colors = postFieldColors,
+                textStyle = postFieldTextStyle
             )
 
             Spacer(modifier = Modifier.height(16.dp))
@@ -426,9 +435,8 @@ fun CreatePostScreen(
                     .testTag("location_input_field"),
                 shape = RoundedCornerShape(18.dp),
                 singleLine = true,
-                colors = OutlinedTextFieldDefaults.colors(
-                    focusedBorderColor = CirclePurple
-                )
+                colors = postFieldColors,
+                textStyle = postFieldTextStyle
             )
 
             // Location Quick Chips
