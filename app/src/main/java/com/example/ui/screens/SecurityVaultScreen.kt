@@ -25,6 +25,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.data.model.SecuritySettings
 import com.example.ui.CircleViewModel
+import com.example.ui.Screen
 import com.example.ui.theme.CirclePurple
 import com.example.ui.theme.CloseFriendsGreen
 import com.example.ui.theme.CloseFriendsGreenContainer
@@ -427,6 +428,11 @@ fun SecurityVaultScreen(
                             )
                         }
                     }
+                }
+            }
+
+            Spacer(modifier = Modifier.height(10.dp))
+
             Text(
                 text = "INTERACTION & NETWORK PRIVACY",
                 style = MaterialTheme.typography.labelSmall.copy(
@@ -513,6 +519,110 @@ fun SecurityVaultScreen(
                         tint = CirclePurple
                     )
                 }
+            }
+
+            // Privacy Policy & Disclaimer Card
+            var showPrivacyDialog by remember { mutableStateOf(false) }
+            Card(
+                shape = RoundedCornerShape(20.dp),
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+                border = androidx.compose.foundation.BorderStroke(1.dp, MaterialTheme.colorScheme.outline),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clickable { showPrivacyDialog = true }
+                    .testTag("privacy_policy_card")
+            ) {
+                Row(
+                    modifier = Modifier.padding(18.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Box(
+                        modifier = Modifier
+                            .size(42.dp)
+                            .clip(CircleShape)
+                            .background(CloseFriendsGreen.copy(alpha = 0.2f)),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Gavel,
+                            contentDescription = "Privacy & Disclaimer",
+                            tint = CloseFriendsGreen,
+                            modifier = Modifier.size(22.dp)
+                        )
+                    }
+                    Spacer(modifier = Modifier.width(14.dp))
+                    Column(modifier = Modifier.weight(1f)) {
+                        Text(
+                            text = "Privacy Policy & Legal Disclaimer",
+                            style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold)
+                        )
+                        Spacer(modifier = Modifier.height(2.dp))
+                        Text(
+                            text = "Review end-to-end encryption policy, zero telemetry commitment, and terms of service.",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+                    Icon(
+                        imageVector = Icons.Default.ChevronRight,
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+            }
+
+            if (showPrivacyDialog) {
+                AlertDialog(
+                    onDismissRequest = { showPrivacyDialog = false },
+                    title = {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Icon(Icons.Default.Shield, contentDescription = null, tint = CloseFriendsGreen)
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Text("Privacy Policy & Disclaimer", style = MaterialTheme.typography.titleMedium)
+                        }
+                    },
+                    text = {
+                        Column(
+                            modifier = Modifier
+                                .verticalScroll(rememberScrollState())
+                                .heightIn(max = 360.dp),
+                            verticalArrangement = Arrangement.spacedBy(12.dp)
+                        ) {
+                            Text(
+                                text = "1. Privacy Policy",
+                                style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold, color = CloseFriendsGreen)
+                            )
+                            Text(
+                                text = "Circle is built from the ground up for intimate, private circles. All moments, chats, and stories are protected by cryptographic key exchange. We do not sell user data, maintain advertising trackers, or perform cloud profiling.",
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onSurface
+                            )
+                            Text(
+                                text = "2. On-Device Content Safety",
+                                style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold, color = CloseFriendsGreen)
+                            )
+                            Text(
+                                text = "Content screening runs entirely on your local device hardware to comply with community standards and safety guidelines. No unencrypted media is harvested or stored on external analytics servers.",
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onSurface
+                            )
+                            Text(
+                                text = "3. Legal Disclaimer",
+                                style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold, color = CloseFriendsGreen)
+                            )
+                            Text(
+                                text = "Circle is provided 'as is' without warranty of any kind. Users are solely responsible for content published within their invite-only circles. Ensure all participants in your circle are trusted acquaintances.",
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onSurface
+                            )
+                        }
+                    },
+                    confirmButton = {
+                        TextButton(onClick = { showPrivacyDialog = false }) {
+                            Text("Got It", color = CloseFriendsGreen, fontWeight = FontWeight.Bold)
+                        }
+                    }
+                )
             }
 
             Spacer(modifier = Modifier.height(20.dp))
