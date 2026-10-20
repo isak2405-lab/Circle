@@ -124,11 +124,37 @@ fun FeedScreen(
                         )
                     }
 
-                    // Right: Notification Bell (with purple unread dot) + Small Avatar
+                    // Right: Streak Badge + Notification Bell + Small Avatar
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(10.dp)
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
+                        // We Met Streak Badge (🔥)
+                        val streakCount by viewModel.streakCount.collectAsStateWithLifecycle()
+                        Surface(
+                            shape = RoundedCornerShape(16.dp),
+                            color = CloseFriendsGreenContainer,
+                            border = androidx.compose.foundation.BorderStroke(1.dp, CloseFriendsGreen.copy(alpha = 0.4f)),
+                            modifier = Modifier
+                                .clickable { viewModel.incrementStreak() }
+                                .testTag("streak_badge")
+                        ) {
+                            Row(
+                                modifier = Modifier.padding(horizontal = 8.dp, vertical = 5.dp),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Text(text = "🔥", fontSize = 13.sp)
+                                Spacer(modifier = Modifier.width(3.dp))
+                                Text(
+                                    text = "$streakCount",
+                                    style = MaterialTheme.typography.labelMedium.copy(
+                                        fontWeight = FontWeight.Bold,
+                                        color = CloseFriendsGreen
+                                    )
+                                )
+                            }
+                        }
+
                         // Notification Bell
                         Box(
                             modifier = Modifier

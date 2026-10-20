@@ -11,6 +11,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.outlined.ChatBubbleOutline
 import androidx.compose.material.icons.outlined.Home
+import androidx.compose.material.icons.outlined.Notifications
 import androidx.compose.material.icons.outlined.Person
 import androidx.compose.material.icons.outlined.Search
 import androidx.compose.material3.*
@@ -68,6 +69,15 @@ fun CircleBottomBar(
                 contentDescription = "Explore",
                 testTag = "nav_explore",
                 onClick = { onNavigate(Screen.Explore) }
+            )
+
+            // Memories (Time Capsule)
+            BottomBarNavItem(
+                selected = currentScreen is Screen.Memories,
+                icon = Icons.Outlined.Notifications,
+                contentDescription = "Memories",
+                testTag = "nav_memories",
+                onClick = { onNavigate(Screen.Memories) }
             )
 
             // Create: Compact purple rounded-square plus button (as specified in prompt)

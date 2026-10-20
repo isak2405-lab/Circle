@@ -199,3 +199,15 @@ data class FaqItem(
     val answer: String
 )
 
+data class MemoryItem(
+    val id: String,
+    val title: String,
+    val mediaUrl: String,
+    val dateCreated: String,
+    val unlockDate: String,
+    val daysRemaining: Int,
+    val isUnlocked: Boolean,
+    val description: String
+)
+
+

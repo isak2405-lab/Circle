@@ -102,6 +102,83 @@ class CircleRepository(
     private val _notifications = MutableStateFlow<List<NotificationItem>>(emptyList())
     val notifications: StateFlow<List<NotificationItem>> = _notifications.asStateFlow()
 
+    // 12-Person Circle Members Limit
+    private val _circleMembers = MutableStateFlow<List<User>>(
+        listOf(
+            User("u_1", "Maya Lin", "mayalin", "https://images.unsplash.com/photo-1517841905240-472988babdf9?w=400&auto=format&fit=crop&q=80", "capturing small moments", isCloseFriend = true, isOnline = true, statusText = "🥐 baking sourdough"),
+            User("u_2", "Leo Chen", "leochen", "https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?w=400&auto=format&fit=crop&q=80", "brooklyn based // sound designer", isCloseFriend = true, isOnline = true, statusText = "🎛️ in the studio"),
+            User("u_3", "Elena Rostova", "elenar", "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=400&auto=format&fit=crop&q=80", "architecture & espresso", isCloseFriend = true, isOnline = false, statusText = "reading Calvino"),
+            User("u_5", "Kai Tanaka", "kaitanaka", "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=400&auto=format&fit=crop&q=80", "tokyo / berlin", isCloseFriend = true, isOnline = false, statusText = "✈️ transit")
+        )
+    )
+    val circleMembers: StateFlow<List<User>> = _circleMembers.asStateFlow()
+
+    fun addCircleMember(user: User): Boolean {
+        if (_circleMembers.value.size >= 12) return false
+        if (_circleMembers.value.any { it.id == user.id }) return true
+        _circleMembers.update { it + user }
+        return true
+    }
+
+    fun removeCircleMember(userId: String) {
+        _circleMembers.update { list -> list.filter { it.id != userId } }
+    }
+
+    // Memories Time Capsule
+    private val _memories = MutableStateFlow<List<MemoryItem>>(
+        listOf(
+            MemoryItem(
+                id = "m_1",
+                title = "Summer Cabin Sunset",
+                mediaUrl = "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=600&auto=format&fit=crop&q=80",
+                dateCreated = "July 14, 2025",
+                unlockDate = "Unlocked Today",
+                daysRemaining = 0,
+                isUnlocked = true,
+                description = "Golden hour by the lake with the whole circle."
+            ),
+            MemoryItem(
+                id = "m_2",
+                title = "First Snow in Brooklyn",
+                mediaUrl = "https://images.unsplash.com/photo-1517783997759-f923e4293f77?w=600&auto=format&fit=crop&q=80",
+                dateCreated = "Dec 10, 2025",
+                unlockDate = "Unlocked Yesterday",
+                daysRemaining = 0,
+                isUnlocked = true,
+                description = "Walking through Prospect Park in the first snow."
+            ),
+            MemoryItem(
+                id = "m_3",
+                title = "Spring Cherry Blossoms",
+                mediaUrl = "https://images.unsplash.com/photo-1522383225653-ed111181a951?w=600&auto=format&fit=crop&q=80",
+                dateCreated = "March 20, 2026",
+                unlockDate = "Unlocks in 12 days",
+                daysRemaining = 12,
+                isUnlocked = false,
+                description = "Time capsule sealed until next spring bloom."
+            ),
+            MemoryItem(
+                id = "m_4",
+                title = "Midnight Rooftop Jam",
+                mediaUrl = "https://images.unsplash.com/photo-1514525253161-7a46d19cd819?w=600&auto=format&fit=crop&q=80",
+                dateCreated = "August 02, 2025",
+                unlockDate = "Unlocks in 34 days",
+                daysRemaining = 34,
+                isUnlocked = false,
+                description = "Acoustic guitar and warm wind."
+            )
+        )
+    )
+    val memories: StateFlow<List<MemoryItem>> = _memories.asStateFlow()
+
+    // We Met Streak
+    private val _streakCount = MutableStateFlow(5)
+    val streakCount: StateFlow<Int> = _streakCount.asStateFlow()
+
+    fun incrementStreak() {
+        _streakCount.update { it + 1 }
+    }
+
     // Profile Highlights
     val profileHighlights = listOf(
         "Late Nights" to "https://images.unsplash.com/photo-1514525253161-7a46d19cd819?w=300&auto=format&fit=crop&q=80",

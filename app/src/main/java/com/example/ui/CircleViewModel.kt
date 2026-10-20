@@ -11,6 +11,7 @@ import kotlinx.coroutines.launch
 sealed class Screen {
     data object Feed : Screen()
     data object Explore : Screen()
+    data object Memories : Screen()
     data object CreatePost : Screen()
     data object Notifications : Screen()
     data object Profile : Screen()
@@ -45,6 +46,13 @@ class CircleViewModel(
     val notifications = repository.notifications
     val aestheticFilters = repository.aestheticFilters
     val postDraft = repository.postDraft
+    val circleMembers = repository.circleMembers
+    val memories = repository.memories
+    val streakCount = repository.streakCount
+
+    fun addCircleMember(user: User): Boolean = repository.addCircleMember(user)
+    fun removeCircleMember(userId: String) = repository.removeCircleMember(userId)
+    fun incrementStreak() = repository.incrementStreak()
 
     // Active Comments Sheet State
     private val _activeCommentPostId = MutableStateFlow<String?>(null)

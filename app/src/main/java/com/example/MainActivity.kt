@@ -45,6 +45,7 @@ fun CircleApp(
 
     val isPrimaryTab = currentScreen is Screen.Feed ||
             currentScreen is Screen.Explore ||
+            currentScreen is Screen.Memories ||
             currentScreen is Screen.ChatList ||
             currentScreen is Screen.Profile
 
@@ -73,6 +74,12 @@ fun CircleApp(
                     ExploreScreen(
                         viewModel = viewModel,
                         onPostClick = { /* open post */ }
+                    )
+                }
+                is Screen.Memories -> {
+                    MemoriesScreen(
+                        viewModel = viewModel,
+                        onBack = { viewModel.navigateBack() }
                     )
                 }
                 is Screen.CreatePost -> {

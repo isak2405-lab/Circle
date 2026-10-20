@@ -33,9 +33,11 @@ import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
 import com.example.data.model.Post
 import com.example.data.model.PostType
+import com.example.data.model.User
 import com.example.ui.CircleViewModel
 import com.example.ui.Screen
 import com.example.ui.theme.*
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -378,11 +380,134 @@ fun ProfileScreen(
                     onClick = { viewModel.navigateTo(Screen.SecurityVault) }
                 )
 
+                val circleMembers by viewModel.circleMembers.collectAsStateWithLifecycle()
+                var showInnerCircleManager by remember { mutableStateOf(false) }
+                var showCircleFullDialog by remember { mutableStateOf(false) }
+
                 SettingsSectionCard(
-                    title = "Inner-Circle Membership",
-                    description = "Manage close friends list and designated permissions",
-                    onClick = { /* Inner circle manager */ }
+                    title = "Inner-Circle Membership (${circleMembers.size}/12)",
+                    description = "Strict 12-person limit. Manage close friends and permissions.",
+                    onClick = { showInnerCircleManager = true }
                 )
+
+                if (showInnerCircleManager) {
+                    AlertDialog(
+                        onDismissRequest = { showInnerCircleManager = false },
+                        title = {
+                            Column {
+                                Text("Inner-Circle Membership", style = MaterialTheme.typography.titleMedium)
+                                Spacer(modifier = Modifier.height(6.dp))
+                                LinearProgressIndicator(
+                                    progress = { circleMembers.size / 12f },
+                                    modifier = Modifier.fillMaxWidth().height(6.dp).clip(RoundedCornerShape(3.dp)),
+                                    color = BrandPrimary
+                                )
+                                Spacer(modifier = Modifier.height(4.dp))
+                                Text(
+                                    text = "${circleMembers.size} of 12 slots filled",
+                                    style = MaterialTheme.typography.labelSmall,
+                                    color = SecondaryText
+                                )
+                            }
+                        },
+                        text = {
+                            Column(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .heightIn(max = 300.dp)
+                                    .verticalScroll(rememberScrollState()),
+                                verticalArrangement = Arrangement.spacedBy(8.dp)
+                            ) {
+                                circleMembers.forEach { member ->
+                                    Row(
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .background(MaterialTheme.colorScheme.surfaceVariant, RoundedCornerShape(10.dp))
+                                            .padding(10.dp),
+                                        verticalAlignment = Alignment.CenterVertically,
+                                        horizontalArrangement = Arrangement.SpaceBetween
+                                    ) {
+                                        Row(verticalAlignment = Alignment.CenterVertically) {
+                                            AsyncImage(
+                                                model = member.avatarUrl,
+                                                contentDescription = null,
+                                                modifier = Modifier.size(32.dp).clip(CircleShape),
+                                                contentScale = ContentScale.Crop
+                                            )
+                                            Spacer(modifier = Modifier.width(10.dp))
+                                            Column {
+                                                Text(member.name, style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Bold))
+                                                Text("@${member.username}", style = MaterialTheme.typography.labelSmall, color = SecondaryText)
+                                            }
+                                        }
+                                        TextButton(onClick = { viewModel.removeCircleMember(member.id) }) {
+                                            Text("Remove", color = MaterialTheme.colorScheme.error, fontSize = 12.sp)
+                                        }
+                                    }
+                                }
+                            }
+                        },
+                        confirmButton = {
+                            Button(
+                                onClick = {
+                                    if (circleMembers.size >= 12) {
+                                        showInnerCircleManager = false
+                                        showCircleFullDialog = true
+                                    } else {
+                                        // Add sample new member
+                                        val newId = "u_${System.currentTimeMillis()}"
+                                        val newMember = User(
+                                            id = newId,
+                                            name = "New Friend",
+                                            username = "friend_${circleMembers.size + 1}",
+                                            avatarUrl = "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=400&auto=format&fit=crop&q=80",
+                                            bio = "Invited to the circle",
+                                            isCloseFriend = true
+                                        )
+                                        val success = viewModel.addCircleMember(newMember)
+                                        if (!success) {
+                                            showInnerCircleManager = false
+                                            showCircleFullDialog = true
+                                        }
+                                    }
+                                },
+                                colors = ButtonDefaults.buttonColors(containerColor = BrandPrimary)
+                            ) {
+                                Text("Add Member")
+                            }
+                        },
+                        dismissButton = {
+                            TextButton(onClick = { showInnerCircleManager = false }) {
+                                Text("Close")
+                            }
+                        }
+                    )
+                }
+
+                if (showCircleFullDialog) {
+                    AlertDialog(
+                        onDismissRequest = { showCircleFullDialog = false },
+                        icon = { Icon(Icons.Default.Lock, contentDescription = null, tint = BrandPrimary) },
+                        title = { Text("Circle Full (12/12)") },
+                        text = { Text("Your Circle has reached the strict maximum limit of 12 close friends. To add a new member, please remove someone from your circle first.") },
+                        confirmButton = {
+                            Button(
+                                onClick = {
+                                    showCircleFullDialog = false
+                                    showInnerCircleManager = true
+                                },
+                                colors = ButtonDefaults.buttonColors(containerColor = BrandPrimary)
+                            ) {
+                                Text("Manage Circle")
+                            }
+                        },
+                        dismissButton = {
+                            TextButton(onClick = { showCircleFullDialog = false }) {
+                                Text("Cancel")
+                            }
+                        }
+                    )
+                }
 
                 Spacer(modifier = Modifier.height(10.dp))
 
