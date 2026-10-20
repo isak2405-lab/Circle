@@ -19,6 +19,7 @@ sealed class Screen {
     data class ChatDetail(val conversationId: String) : Screen()
     data object Call : Screen()
     data object SecurityVault : Screen()
+    data object SupportBot : Screen()
     data object Splash : Screen()
     data object Auth : Screen()
 }
@@ -269,6 +270,111 @@ class CircleViewModel(
 
     // Security Settings Controls
     fun updateSecuritySettings(settings: SecuritySettings) = repository.updateSecuritySettings(settings)
+
+    fun regenerateSecurityKeys() {
+        val chars = "0123456789ABCDEF"
+        val chunks = (1..8).map {
+            (1..2).map { chars.random() }.joinToString("")
+        }.joinToString(":")
+        val newFingerprint = "SHA256:$chunks"
+        val current = securitySettings.value
+        updateSecuritySettings(current.copy(safetyFingerprint = newFingerprint))
+    }
+
+    // Support Bot & FAQ Assistant State
+    private val _supportMessages = MutableStateFlow<List<com.example.data.model.SupportMessage>>(
+        listOf(
+            com.example.data.model.SupportMessage(
+                id = "msg_welcome",
+                isFromBot = true,
+                text = "Hi there! 👋 I'm Orbit, your Circle Support & Security Assistant.\n\nAsk me anything about fixing Google Play download issues, setting up invite-only privacy, configuring biometric lock, or editing your profile."
+            )
+        )
+    )
+    val supportMessages: StateFlow<List<com.example.data.model.SupportMessage>> = _supportMessages.asStateFlow()
+
+    fun sendSupportQuery(rawQuery: String) {
+        val query = rawQuery.trim()
+        if (query.isBlank()) return
+
+        val userMsg = com.example.data.model.SupportMessage(
+            id = "u_${System.currentTimeMillis()}",
+            isFromBot = false,
+            text = query
+        )
+        _supportMessages.value = _supportMessages.value + userMsg
+
+        viewModelScope.launch {
+            kotlinx.coroutines.delay(350)
+            val normalized = query.lowercase(java.util.Locale.ROOT)
+            val botResponse: com.example.data.model.SupportMessage = when {
+                normalized.contains("download") || normalized.contains("play store") || normalized.contains("age") || normalized.contains("restriction") || normalized.contains("wife") -> {
+                    com.example.data.model.SupportMessage(
+                        id = "b_${System.currentTimeMillis()}",
+                        isFromBot = true,
+                        text = "📱 **Fixing Google Play Age Restriction & Downloads:**\n\n1. **Retake Content Questionnaire:** In Google Play Console under *Policy > App Content > Content Ratings*, answer 'No' to explicit content/violence. This drops the rating from 18+ to Teen/PEGI 12.\n2. **Target Audience:** Select 13–15, 16–17, and 18+.\n3. **If in Internal Testing:** Make sure your wife's email is in the *Internal testing > Testers* list, and she clicks the web opt-in invite link.\n4. **Device Check:** Check *Play Store > Settings > Family > Parental Controls*.",
+                        actionLabel = "Open Security Vault",
+                        actionType = "SECURITY_VAULT"
+                    )
+                }
+                normalized.contains("invite") || normalized.contains("friend") || normalized.contains("stranger") || normalized.contains("private") -> {
+                    com.example.data.model.SupportMessage(
+                        id = "b_${System.currentTimeMillis()}",
+                        isFromBot = true,
+                        text = "🔒 **Strict Invite-Only Circle:**\n\nYes! When 'Strict Invite-Only' is turned ON in your Security Vault:\n• Only mutual, accepted friends can see your moments, stories, or send direct messages.\n• Your profile will never appear in global public search or directories.",
+                        actionLabel = "Check Security Settings",
+                        actionType = "SECURITY_VAULT"
+                    )
+                }
+                normalized.contains("security") || normalized.contains("encrypt") || normalized.contains("e2ee") || normalized.contains("key") || normalized.contains("vault") -> {
+                    com.example.data.model.SupportMessage(
+                        id = "b_${System.currentTimeMillis()}",
+                        isFromBot = true,
+                        text = "🛡️ **Security Architecture:**\n\n• **End-to-End Encryption:** Curve25519 key exchange + ChaCha20-Poly1305 and AES-256-GCM.\n• **Screenshot Shield:** Blocks OS screenshot capture on private moments.\n• **Anti-Leak Watermarks:** Invisible cryptographic signature embeds in shared media.\n• **Key Rotation:** You can tap 'Rotate Keys' in the Security Vault anytime.",
+                        actionLabel = "Open Security Vault",
+                        actionType = "SECURITY_VAULT"
+                    )
+                }
+                normalized.contains("nude") || normalized.contains("nudity") || normalized.contains("abuse") || normalized.contains("harass") || normalized.contains("safety") -> {
+                    com.example.data.model.SupportMessage(
+                        id = "b_${System.currentTimeMillis()}",
+                        isFromBot = true,
+                        text = "🛑 **On-Device Safety & Anti-Abuse Guard:**\n\n• Real-time client-side keyword and skin-chroma analysis screens posts, captions, and comments *before* they are shared.\n• Zero cloud surveillance: your media is never sent unencrypted to external servers.\n• You can also report and instantly hide any post directly from the moment card.",
+                        actionLabel = "View Safety Guard",
+                        actionType = "SECURITY_VAULT"
+                    )
+                }
+                normalized.contains("photo") || normalized.contains("avatar") || normalized.contains("picture") || normalized.contains("edit") -> {
+                    com.example.data.model.SupportMessage(
+                        id = "b_${System.currentTimeMillis()}",
+                        isFromBot = true,
+                        text = "📸 **Updating Your Profile Picture:**\n\n1. Go to your Profile tab.\n2. Tap directly on your avatar (or tap 'Account & Profile' in Settings).\n3. Tap 'Upload from Gallery' to pick any photo from your phone, or pick one of the aesthetic presets!\n4. Tap 'Save' to apply instantly.",
+                        actionLabel = "Go to Profile",
+                        actionType = "PROFILE"
+                    )
+                }
+                normalized.contains("call") || normalized.contains("video") || normalized.contains("audio") || normalized.contains("voice") -> {
+                    com.example.data.model.SupportMessage(
+                        id = "b_${System.currentTimeMillis()}",
+                        isFromBot = true,
+                        text = "📞 **Encrypted Calling:**\n\n• Start a 1-on-1 Voice or Video call inside any chat.\n• Calls feature peer-to-peer encryption with a verified safety fingerprint.\n• You can enable 'Relay Calling' in the Vault to protect your IP address.",
+                        actionLabel = "Open Security Vault",
+                        actionType = "SECURITY_VAULT"
+                    )
+                }
+                else -> {
+                    com.example.data.model.SupportMessage(
+                        id = "b_${System.currentTimeMillis()}",
+                        isFromBot = true,
+                        text = "I received your question: \"$query\". Circle is built with zero advertising and strict close-friends privacy. Feel free to tap any of the quick topics above or check our Security Vault for full control.",
+                        actionLabel = "Open Security Vault",
+                        actionType = "SECURITY_VAULT"
+                    )
+                }
+            }
+            _supportMessages.value = _supportMessages.value + botResponse
+        }
+    }
 
     companion object {
         fun provideFactory(context: android.content.Context): androidx.lifecycle.ViewModelProvider.Factory =

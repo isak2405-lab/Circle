@@ -120,6 +120,12 @@ fun CircleApp(
                         onBack = { viewModel.navigateBack() }
                     )
                 }
+                is Screen.SupportBot -> {
+                    SupportFaqScreen(
+                        viewModel = viewModel,
+                        onBack = { viewModel.navigateBack() }
+                    )
+                }
                 is Screen.Splash -> {
                     WavySplashScreen(
                         onFinish = { viewModel.navigateTo(Screen.Feed) }

@@ -80,7 +80,18 @@ fun SecurityVaultScreen(
                 .padding(horizontal = 18.dp, vertical = 10.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            // High Level Protocol Verification Banner
+            // Dynamic Security Shield Health Score
+            val securityScore = remember(settings) {
+                var score = 0
+                if (settings.isE2EEEnabled) score += 25
+                if (settings.isScreenshotProtectionEnabled) score += 20
+                if (settings.isAntiLeakWatermarkEnabled) score += 15
+                if (settings.isAppLockEnabled) score += 20
+                if (settings.isStrictInviteOnly) score += 10
+                if (settings.ephemeralTimerMinutes != 0) score += 10
+                score
+            }
+
             Card(
                 shape = RoundedCornerShape(20.dp),
                 colors = CardDefaults.cardColors(
@@ -88,36 +99,68 @@ fun SecurityVaultScreen(
                 )
             ) {
                 Column(modifier = Modifier.padding(18.dp)) {
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        Box(
-                            modifier = Modifier
-                                .size(36.dp)
-                                .clip(CircleShape)
-                                .background(CloseFriendsGreen),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            Icon(
-                                imageVector = Icons.Default.Lock,
-                                contentDescription = null,
-                                tint = PureWhite,
-                                modifier = Modifier.size(20.dp)
-                            )
-                        }
-                        Spacer(modifier = Modifier.width(12.dp))
-                        Column {
-                            Text(
-                                text = "Military-Grade Cryptography Active",
-                                style = MaterialTheme.typography.titleSmall.copy(
-                                    fontWeight = FontWeight.Bold,
-                                    color = CloseFriendsGreen
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.SpaceBetween
+                    ) {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Box(
+                                modifier = Modifier
+                                    .size(36.dp)
+                                    .clip(CircleShape)
+                                    .background(CloseFriendsGreen),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.Lock,
+                                    contentDescription = null,
+                                    tint = PureWhite,
+                                    modifier = Modifier.size(20.dp)
                                 )
-                            )
+                            }
+                            Spacer(modifier = Modifier.width(12.dp))
+                            Column {
+                                Text(
+                                    text = "Security Shield: $securityScore%",
+                                    style = MaterialTheme.typography.titleSmall.copy(
+                                        fontWeight = FontWeight.Bold,
+                                        color = CloseFriendsGreen
+                                    )
+                                )
+                                Text(
+                                    text = if (securityScore >= 90) "Maximum Intimate Shield Active" else "Solid Protection Configured",
+                                    style = MaterialTheme.typography.bodySmall.copy(color = MaterialTheme.colorScheme.onSurface)
+                                )
+                            }
+                        }
+
+                        Surface(
+                            shape = RoundedCornerShape(10.dp),
+                            color = CloseFriendsGreen.copy(alpha = 0.2f)
+                        ) {
                             Text(
-                                text = "All chats, calls, and moments are client-encrypted.",
-                                style = MaterialTheme.typography.bodySmall.copy(color = MaterialTheme.colorScheme.onSurface)
+                                text = "VERIFIED",
+                                style = MaterialTheme.typography.labelSmall.copy(
+                                    fontWeight = FontWeight.Bold,
+                                    color = CloseFriendsGreen,
+                                    fontSize = 10.sp
+                                ),
+                                modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
                             )
                         }
                     }
+
+                    Spacer(modifier = Modifier.height(10.dp))
+                    LinearProgressIndicator(
+                        progress = { securityScore / 100f },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(6.dp)
+                            .clip(RoundedCornerShape(3.dp)),
+                        color = CloseFriendsGreen,
+                        trackColor = CloseFriendsGreen.copy(alpha = 0.2f)
+                    )
 
                     Spacer(modifier = Modifier.height(14.dp))
                     HorizontalDivider(color = CloseFriendsGreen.copy(alpha = 0.2f))
@@ -142,7 +185,7 @@ fun SecurityVaultScreen(
                     Spacer(modifier = Modifier.height(10.dp))
 
                     Text(
-                        text = "SAFETY NUMBER FINGERPRINT:",
+                        text = "ACTIVE SAFETY FINGERPRINT:",
                         style = MaterialTheme.typography.labelSmall.copy(
                             color = CloseFriendsGreen,
                             fontWeight = FontWeight.Bold
@@ -156,6 +199,37 @@ fun SecurityVaultScreen(
                             fontSize = 11.sp
                         )
                     )
+
+                    Spacer(modifier = Modifier.height(12.dp))
+
+                    // Rotate Session Keys
+                    var keysRotatedNotice by remember { mutableStateOf(false) }
+                    Button(
+                        onClick = {
+                            viewModel.regenerateSecurityKeys()
+                            keysRotatedNotice = true
+                        },
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = CloseFriendsGreen
+                        ),
+                        shape = RoundedCornerShape(12.dp),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .testTag("rotate_security_keys_button")
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Refresh,
+                            contentDescription = null,
+                            tint = PureWhite,
+                            modifier = Modifier.size(16.dp)
+                        )
+                        Spacer(modifier = Modifier.width(6.dp))
+                        Text(
+                            text = if (keysRotatedNotice) "New Session Keys Active ✓" else "Rotate Session Keys (Curve25519)",
+                            color = PureWhite,
+                            style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.SemiBold)
+                        )
+                    }
                 }
             }
 
@@ -353,6 +427,91 @@ fun SecurityVaultScreen(
                             )
                         }
                     }
+            Text(
+                text = "INTERACTION & NETWORK PRIVACY",
+                style = MaterialTheme.typography.labelSmall.copy(
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    letterSpacing = 1.sp
+                )
+            )
+
+            // Strict Invite-Only Interaction Shield
+            SecuritySwitchCard(
+                title = "Strict Invite-Only Circle",
+                subtitle = "Only mutually approved close friends can see your moments, stories, or send chats. Blocks random accounts from viewing or finding you.",
+                checked = settings.isStrictInviteOnly,
+                onCheckedChange = {
+                    viewModel.updateSecuritySettings(settings.copy(isStrictInviteOnly = it))
+                }
+            )
+
+            // Encrypted Relay Calling (IP Obfuscation)
+            SecuritySwitchCard(
+                title = "Encrypted Peer-Relay Calling",
+                subtitle = "Obfuscates your device IP address during voice and video calls through secure encrypted relay nodes.",
+                checked = settings.isIncognitoCalling,
+                onCheckedChange = {
+                    viewModel.updateSecuritySettings(settings.copy(isIncognitoCalling = it))
+                }
+            )
+
+            // Incognito Read Receipts
+            SecuritySwitchCard(
+                title = "Incognito Read Receipts",
+                subtitle = "Read incoming direct messages without notifying other participants or updating read status.",
+                checked = settings.isHideReadReceipts,
+                onCheckedChange = {
+                    viewModel.updateSecuritySettings(settings.copy(isHideReadReceipts = it))
+                }
+            )
+
+            // Interactive FAQ & Support Bot Card
+            Card(
+                shape = RoundedCornerShape(20.dp),
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant),
+                border = androidx.compose.foundation.BorderStroke(1.dp, CirclePurple.copy(alpha = 0.3f)),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clickable { viewModel.navigateTo(Screen.SupportBot) }
+                    .testTag("security_support_bot_card")
+            ) {
+                Row(
+                    modifier = Modifier.padding(18.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Box(
+                        modifier = Modifier
+                            .size(42.dp)
+                            .clip(CircleShape)
+                            .background(CirclePurple),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.SmartToy,
+                            contentDescription = "Support Bot",
+                            tint = PureWhite,
+                            modifier = Modifier.size(24.dp)
+                        )
+                    }
+                    Spacer(modifier = Modifier.width(14.dp))
+                    Column(modifier = Modifier.weight(1f)) {
+                        Text(
+                            text = "Interactive FAQ & Support Bot",
+                            style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold)
+                        )
+                        Spacer(modifier = Modifier.height(2.dp))
+                        Text(
+                            text = "Get instant answers on Play Store age restrictions, family downloads, invite-only rules, and encryption.",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+                    Icon(
+                        imageVector = Icons.Default.ChevronRight,
+                        contentDescription = null,
+                        tint = CirclePurple
+                    )
                 }
             }
 

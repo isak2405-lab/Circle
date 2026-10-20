@@ -175,6 +175,27 @@ data class SecuritySettings(
     val isAntiLeakWatermarkEnabled: Boolean = true,
     val ephemeralTimerMinutes: Int = 0, // 0 = off, 60 = 1h, 1440 = 24h
     val safetyFingerprint: String = "SHA256:7B:4E:91:2A:F3:C8:55:0D:33:1E:8C:FA:02:64:99:A1",
-    val encryptionProtocol: String = "Curve25519 + ChaCha20-Poly1305 + AES-256-GCM"
+    val encryptionProtocol: String = "Curve25519 + ChaCha20-Poly1305 + AES-256-GCM",
+    val isStrictInviteOnly: Boolean = true,
+    val isHideReadReceipts: Boolean = false,
+    val isIncognitoCalling: Boolean = true,
+    val isAntiAbuseActive: Boolean = true,
+    val isNudityFilterActive: Boolean = true
+)
+
+data class SupportMessage(
+    val id: String,
+    val isFromBot: Boolean,
+    val text: String,
+    val timestamp: Long = System.currentTimeMillis(),
+    val actionLabel: String? = null,
+    val actionType: String? = null
+)
+
+data class FaqItem(
+    val id: String,
+    val category: String,
+    val question: String,
+    val answer: String
 )
 
