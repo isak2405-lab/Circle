@@ -9,7 +9,12 @@ enum class PostType {
 enum class ReactionType(val emoji: String, val label: String) {
     HEART("❤️", "Love"),
     LAUGH("😂", "Haha"),
-    FIRE("🔥", "Fire")
+    FIRE("🔥", "Fire"),
+    THUMBS_UP("👍", "Like"),
+    WOW("😮", "Wow"),
+    PARTY("🎉", "Party"),
+    SAD("😢", "Sad"),
+    HUNDRED("💯", "100")
 }
 
 data class User(
@@ -48,7 +53,12 @@ data class Post(
     val reactions: Map<ReactionType, Int> = mapOf(
         ReactionType.HEART to 0,
         ReactionType.LAUGH to 0,
-        ReactionType.FIRE to 0
+        ReactionType.FIRE to 0,
+        ReactionType.THUMBS_UP to 0,
+        ReactionType.WOW to 0,
+        ReactionType.PARTY to 0,
+        ReactionType.SAD to 0,
+        ReactionType.HUNDRED to 0
     ),
     val userReaction: ReactionType? = null,
     val comments: List<Comment> = emptyList(),

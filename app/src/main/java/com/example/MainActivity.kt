@@ -115,12 +115,6 @@ fun CircleApp(
                         onBack = { viewModel.navigateBack() }
                     )
                 }
-                is Screen.Call -> {
-                    CallScreen(
-                        viewModel = viewModel,
-                        onEndCall = { viewModel.endCall() }
-                    )
-                }
                 is Screen.SecurityVault -> {
                     SecurityVaultScreen(
                         viewModel = viewModel,

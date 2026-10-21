@@ -18,7 +18,6 @@ sealed class Screen {
     data class StoryViewer(val initialUserStoryIndex: Int) : Screen()
     data object ChatList : Screen()
     data class ChatDetail(val conversationId: String) : Screen()
-    data object Call : Screen()
     data object SecurityVault : Screen()
     data object SupportBot : Screen()
     data object Splash : Screen()
@@ -149,8 +148,8 @@ class CircleViewModel(
         navigateTo(Screen.ChatDetail(conversationId))
     }
 
-    fun sendMessage(conversationId: String, text: String?, isVoiceNote: Boolean = false, voiceDuration: Int = 0) {
-        repository.sendMessage(conversationId, text, isVoiceNote, voiceDuration)
+    fun sendMessage(conversationId: String, text: String?, isVoiceNote: Boolean = false, voiceDuration: Int = 0, mediaUrl: String? = null) {
+        repository.sendMessage(conversationId, text, isVoiceNote, voiceDuration, mediaUrl)
         // Simulate immediate response after 2 seconds for a lively chat feel
         viewModelScope.launch {
             delay(1800)
@@ -243,34 +242,6 @@ class CircleViewModel(
     }
 
     fun getFriends(): List<User> = repository.getFriends()
-
-    // Call Engine Controls
-    private var callTimerJob: kotlinx.coroutines.Job? = null
-
-    fun startCall(participant: User, type: CallType) {
-        repository.startCall(participant, type)
-        navigateTo(Screen.Call)
-        callTimerJob?.cancel()
-        callTimerJob = viewModelScope.launch {
-            delay(1500)
-            repository.setCallConnected()
-            while (true) {
-                delay(1000)
-                repository.tickCallDuration()
-            }
-        }
-    }
-
-    fun endCall() {
-        callTimerJob?.cancel()
-        repository.endCall()
-        navigateBack()
-    }
-
-    fun toggleMuteCall() = repository.toggleMuteCall()
-    fun toggleSpeakerCall() = repository.toggleSpeakerCall()
-    fun toggleCameraCall() = repository.toggleCameraCall()
-    fun flipCameraCall() = repository.flipCameraCall()
 
     // Feed Options Controls
     fun setFeedFilterMode(mode: FeedFilterMode) = repository.setFeedFilterMode(mode)

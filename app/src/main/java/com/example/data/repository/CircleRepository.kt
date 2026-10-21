@@ -661,12 +661,13 @@ class CircleRepository(
         }
     }
 
-    fun sendMessage(conversationId: String, text: String?, isVoiceNote: Boolean = false, voiceDuration: Int = 0) {
-        if (text.isNullOrBlank() && !isVoiceNote) return
+    fun sendMessage(conversationId: String, text: String?, isVoiceNote: Boolean = false, voiceDuration: Int = 0, mediaUrl: String? = null) {
+        if (text.isNullOrBlank() && !isVoiceNote && mediaUrl == null) return
         val newMsg = ChatMessage(
             id = "m_${System.currentTimeMillis()}",
             senderId = "u_me",
             text = text,
+            mediaUrl = mediaUrl,
             isVoiceNote = isVoiceNote,
             voiceDurationSec = voiceDuration,
             timestamp = "Just now",
@@ -676,7 +677,11 @@ class CircleRepository(
             convList.map { conv ->
                 if (conv.id == conversationId) {
                     conv.copy(
-                        lastMessage = if (isVoiceNote) "Sent a voice note (${voiceDuration}s)" else (text ?: ""),
+                        lastMessage = when {
+                            isVoiceNote -> "Sent a voice note (${voiceDuration}s)"
+                            mediaUrl != null -> "Sent a sticker"
+                            else -> (text ?: "")
+                        },
                         timestamp = "Just now",
                         messages = conv.messages + newMsg
                     )

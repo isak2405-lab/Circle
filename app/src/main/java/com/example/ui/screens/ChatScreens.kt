@@ -8,8 +8,10 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.Send
@@ -240,30 +242,6 @@ fun ChatDetailScreen(
                     }
                 },
                 actions = {
-                    // Audio Call Button
-                    IconButton(
-                        onClick = { viewModel.startCall(conv.friend, com.example.data.model.CallType.VOICE) },
-                        modifier = Modifier.testTag("voice_call_button_${conv.friend.username}")
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.Call,
-                            contentDescription = "Voice Call",
-                            tint = CirclePurple
-                        )
-                    }
-
-                    // Video Call Button
-                    IconButton(
-                        onClick = { viewModel.startCall(conv.friend, com.example.data.model.CallType.VIDEO) },
-                        modifier = Modifier.testTag("video_call_button_${conv.friend.username}")
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.Videocam,
-                            contentDescription = "Video Call",
-                            tint = CirclePurple
-                        )
-                    }
-
                     // Security E2EE Details
                     IconButton(
                         onClick = { viewModel.navigateTo(com.example.ui.Screen.SecurityVault) },
@@ -332,6 +310,9 @@ fun ChatDetailScreen(
                     .fillMaxWidth()
                     .navigationBarsPadding()
             ) {
+                var showVoiceRecorder by remember { mutableStateOf(false) }
+                var showStickerPicker by remember { mutableStateOf(false) }
+
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -340,11 +321,9 @@ fun ChatDetailScreen(
                 ) {
                     // Send Voice Note button
                     IconButton(
-                        onClick = {
-                            viewModel.sendMessage(conversationId, null, isVoiceNote = true, voiceDuration = 18)
-                        },
+                        onClick = { showVoiceRecorder = true },
                         modifier = Modifier
-                            .size(42.dp)
+                            .size(38.dp)
                             .clip(CircleShape)
                             .background(MaterialTheme.colorScheme.surfaceVariant)
                             .testTag("voice_note_button")
@@ -353,11 +332,30 @@ fun ChatDetailScreen(
                             imageVector = Icons.Default.Mic,
                             contentDescription = "Send voice note",
                             tint = CirclePurple,
-                            modifier = Modifier.size(20.dp)
+                            modifier = Modifier.size(18.dp)
                         )
                     }
 
-                    Spacer(modifier = Modifier.width(8.dp))
+                    Spacer(modifier = Modifier.width(6.dp))
+
+                    // Sticker Picker button
+                    IconButton(
+                        onClick = { showStickerPicker = true },
+                        modifier = Modifier
+                            .size(38.dp)
+                            .clip(CircleShape)
+                            .background(MaterialTheme.colorScheme.surfaceVariant)
+                            .testTag("sticker_picker_button")
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.StickyNote2,
+                            contentDescription = "Send sticker",
+                            tint = CirclePurple,
+                            modifier = Modifier.size(18.dp)
+                        )
+                    }
+
+                    Spacer(modifier = Modifier.width(6.dp))
 
                     // Text Field
                     OutlinedTextField(
@@ -413,6 +411,105 @@ fun ChatDetailScreen(
                             modifier = Modifier.size(18.dp)
                         )
                     }
+                }
+
+                if (showVoiceRecorder) {
+                    AlertDialog(
+                        onDismissRequest = { showVoiceRecorder = false },
+                        icon = { Icon(Icons.Default.Mic, contentDescription = null, tint = CirclePurple) },
+                        title = { Text("Record Voice Message") },
+                        text = {
+                            Column(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalAlignment = Alignment.CenterHorizontally
+                            ) {
+                                Text("Recording secure voice note...", style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                                Spacer(modifier = Modifier.height(16.dp))
+                                Row(
+                                    horizontalArrangement = Arrangement.spacedBy(4.dp),
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    val sampleHeights = listOf(16, 32, 20, 38, 28, 42, 24, 34, 18, 30)
+                                    sampleHeights.forEach { h ->
+                                        Box(
+                                            modifier = Modifier
+                                                .width(4.dp)
+                                                .height(h.dp)
+                                                .clip(RoundedCornerShape(2.dp))
+                                                .background(CirclePurple)
+                                        )
+                                    }
+                                }
+                                Spacer(modifier = Modifier.height(12.dp))
+                                Text("0:12 / 1:00", style = MaterialTheme.typography.labelMedium, fontWeight = FontWeight.Bold, color = CirclePurple)
+                            }
+                        },
+                        confirmButton = {
+                            Button(
+                                onClick = {
+                                    showVoiceRecorder = false
+                                    viewModel.sendMessage(conversationId, null, isVoiceNote = true, voiceDuration = 12)
+                                },
+                                colors = ButtonDefaults.buttonColors(containerColor = CirclePurple)
+                            ) {
+                                Text("Send Voice Note", color = PureWhite)
+                            }
+                        },
+                        dismissButton = {
+                            TextButton(onClick = { showVoiceRecorder = false }) {
+                                Text("Cancel")
+                            }
+                        }
+                    )
+                }
+
+                if (showStickerPicker) {
+                    AlertDialog(
+                        onDismissRequest = { showStickerPicker = false },
+                        title = { Text("Choose a Sticker") },
+                        text = {
+                            Column(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .heightIn(max = 280.dp)
+                                    .verticalScroll(rememberScrollState()),
+                                verticalArrangement = Arrangement.spacedBy(10.dp)
+                            ) {
+                                val stickers = listOf(
+                                    "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=400&auto=format&fit=crop&q=80" to "Coffee Club",
+                                    "https://images.unsplash.com/photo-1517841905240-472988babdf9?w=400&auto=format&fit=crop&q=80" to "Smile Wave",
+                                    "https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?w=400&auto=format&fit=crop&q=80" to "Studio Vibes",
+                                    "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&auto=format&fit=crop&q=80" to "Adventure On"
+                                )
+                                stickers.forEach { (url, label) ->
+                                    Row(
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .clickable {
+                                                showStickerPicker = false
+                                                viewModel.sendMessage(conversationId, "Sticker: $label", mediaUrl = url)
+                                            }
+                                            .padding(8.dp),
+                                        verticalAlignment = Alignment.CenterVertically
+                                    ) {
+                                        AsyncImage(
+                                            model = url,
+                                            contentDescription = label,
+                                            modifier = Modifier.size(54.dp).clip(RoundedCornerShape(12.dp)),
+                                            contentScale = ContentScale.Crop
+                                        )
+                                        Spacer(modifier = Modifier.width(12.dp))
+                                        Text(label, style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold))
+                                    }
+                                }
+                            }
+                        },
+                        confirmButton = {
+                            TextButton(onClick = { showStickerPicker = false }) {
+                                Text("Close")
+                            }
+                        }
+                    )
                 }
             }
         }
