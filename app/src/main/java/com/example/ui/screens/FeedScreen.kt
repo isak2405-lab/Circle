@@ -16,8 +16,6 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Image
 import androidx.compose.material.icons.outlined.Notifications
 import androidx.compose.material3.*
@@ -35,20 +33,21 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil.compose.AsyncImage
 import com.example.R
-import com.example.data.model.Post
-import com.example.data.model.ReactionType
 import com.example.ui.CircleViewModel
 import com.example.ui.Screen
 import com.example.ui.components.CommentsBottomSheet
 import com.example.ui.components.PostCard
 import com.example.ui.components.StoriesTray
-import com.example.ui.theme.*
+import com.example.ui.theme.OrbynTheme
 
 @Composable
 fun FeedScreen(
     viewModel: CircleViewModel,
     modifier: Modifier = Modifier
 ) {
+    val colors = OrbynTheme.colors
+    val colorScheme = MaterialTheme.colorScheme
+
     val currentUser by viewModel.currentUser.collectAsStateWithLifecycle()
     val stories by viewModel.stories.collectAsStateWithLifecycle()
     val posts by viewModel.posts.collectAsStateWithLifecycle()
@@ -74,14 +73,14 @@ fun FeedScreen(
     Box(
         modifier = modifier
             .fillMaxSize()
-            .background(AppCanvas)
+            .background(colors.canvas)
     ) {
         Column(modifier = Modifier.fillMaxSize()) {
-            // Clean White Top App Bar
+            // Top App Bar
             Surface(
-                color = SurfaceColor,
+                color = colors.cardSurface,
                 tonalElevation = 0.dp,
-                border = androidx.compose.foundation.BorderStroke(1.dp, DividerOutline),
+                border = androidx.compose.foundation.BorderStroke(1.dp, colors.divider),
                 modifier = Modifier.fillMaxWidth()
             ) {
                 Row(
@@ -92,15 +91,14 @@ fun FeedScreen(
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {
-                    // Left: Circle logo mark + lowercase "circle." wordmark with purple dot
+                    // Left: Orbyn logo mark + lowercase "orbyn." wordmark with themed accent dot
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
                         modifier = Modifier.testTag("app_brand_header")
                     ) {
-                        // Official Circle logo mark
                         Icon(
                             painter = painterResource(id = R.drawable.ic_circle_logo),
-                            contentDescription = "Circle Logo",
+                            contentDescription = "ORBYN Logo",
                             tint = Color.Unspecified,
                             modifier = Modifier.size(28.dp)
                         )
@@ -114,7 +112,7 @@ fun FeedScreen(
                                 letterSpacing = (-0.5).sp,
                                 fontSize = 21.sp
                             ),
-                            color = PrimaryText
+                            color = colors.primaryText
                         )
                         Text(
                             text = ".",
@@ -122,7 +120,7 @@ fun FeedScreen(
                                 fontWeight = FontWeight.Black,
                                 fontSize = 21.sp
                             ),
-                            color = BrandPrimary
+                            color = colorScheme.primary
                         )
                     }
 
@@ -135,8 +133,8 @@ fun FeedScreen(
                         val streakCount by viewModel.streakCount.collectAsStateWithLifecycle()
                         Surface(
                             shape = RoundedCornerShape(16.dp),
-                            color = CloseFriendsGreenContainer,
-                            border = androidx.compose.foundation.BorderStroke(1.dp, CloseFriendsGreen.copy(alpha = 0.4f)),
+                            color = colors.closeFriendsContainer,
+                            border = androidx.compose.foundation.BorderStroke(1.dp, colors.closeFriendsAccent.copy(alpha = 0.4f)),
                             modifier = Modifier
                                 .clickable { viewModel.incrementStreak() }
                                 .testTag("streak_badge")
@@ -151,7 +149,7 @@ fun FeedScreen(
                                     text = "$streakCount",
                                     style = MaterialTheme.typography.labelMedium.copy(
                                         fontWeight = FontWeight.Bold,
-                                        color = CloseFriendsGreen
+                                        color = colors.closeFriendsAccent
                                     )
                                 )
                             }
@@ -169,7 +167,7 @@ fun FeedScreen(
                             Icon(
                                 imageVector = Icons.Outlined.Notifications,
                                 contentDescription = "Notifications",
-                                tint = PrimaryText,
+                                tint = colors.primaryText,
                                 modifier = Modifier.size(22.dp)
                             )
                             if (unreadNotifications > 0) {
@@ -177,7 +175,7 @@ fun FeedScreen(
                                     modifier = Modifier
                                         .size(7.dp)
                                         .clip(CircleShape)
-                                        .background(BrandPrimary)
+                                        .background(colorScheme.primary)
                                         .align(Alignment.TopEnd)
                                         .offset(x = (-4).dp, y = 4.dp)
                                 )
@@ -192,7 +190,7 @@ fun FeedScreen(
                             modifier = Modifier
                                 .size(30.dp)
                                 .clip(CircleShape)
-                                .border(1.dp, DividerOutline, CircleShape)
+                                .border(1.dp, colors.divider, CircleShape)
                                 .clickable { viewModel.navigateTo(Screen.Profile) }
                                 .testTag("top_bar_avatar")
                         )
@@ -222,7 +220,7 @@ fun FeedScreen(
                                     fontSize = 28.sp,
                                     letterSpacing = (-0.4).sp
                                 ),
-                                color = PrimaryText
+                                color = colors.primaryText
                             )
                             Text(
                                 text = ".",
@@ -230,14 +228,14 @@ fun FeedScreen(
                                     fontWeight = FontWeight.Black,
                                     fontSize = 28.sp
                                 ),
-                                color = BrandPrimary
+                                color = colorScheme.primary
                             )
                         }
                         Spacer(modifier = Modifier.height(2.dp))
                         Text(
                             text = "Less noise. Closer circle.",
                             style = MaterialTheme.typography.bodyMedium.copy(fontSize = 14.sp),
-                            color = SecondaryText
+                            color = colors.secondaryText
                         )
                     }
                 }
@@ -256,8 +254,8 @@ fun FeedScreen(
                             val isSelected = selectedFeedTab == index
                             Surface(
                                 shape = RoundedCornerShape(10.dp),
-                                color = if (isSelected) SelectedBackground else SurfaceColor,
-                                border = if (isSelected) null else androidx.compose.foundation.BorderStroke(1.dp, DividerOutline),
+                                color = if (isSelected) colors.selectedContainer else colors.cardSurface,
+                                border = if (isSelected) null else androidx.compose.foundation.BorderStroke(1.dp, colors.divider),
                                 modifier = Modifier
                                     .clickable { selectedFeedTab = index }
                                     .testTag("feed_tab_$index")
@@ -267,7 +265,7 @@ fun FeedScreen(
                                     style = MaterialTheme.typography.labelMedium.copy(
                                         fontWeight = if (isSelected) FontWeight.SemiBold else FontWeight.Normal,
                                         fontSize = 13.sp,
-                                        color = if (isSelected) BrandPrimary else SecondaryText
+                                        color = if (isSelected) colors.onSelectedContainer else colors.secondaryText
                                     ),
                                     modifier = Modifier.padding(horizontal = 14.dp, vertical = 7.dp),
                                     maxLines = 1
@@ -278,7 +276,7 @@ fun FeedScreen(
                     Spacer(modifier = Modifier.height(10.dp))
                 }
 
-                // Horizontal Moments Strip (with purple unseen rings, muted seen rings and Your moment/add control)
+                // Horizontal Moments Strip
                 item {
                     StoriesTray(
                         currentUser = currentUser,
@@ -293,8 +291,8 @@ fun FeedScreen(
                 item {
                     Surface(
                         shape = RoundedCornerShape(14.dp),
-                        color = SurfaceColor,
-                        border = androidx.compose.foundation.BorderStroke(1.dp, DividerOutline),
+                        color = colors.cardSurface,
+                        border = androidx.compose.foundation.BorderStroke(1.dp, colors.divider),
                         modifier = Modifier
                             .fillMaxWidth()
                             .padding(horizontal = 16.dp, vertical = 8.dp)
@@ -319,7 +317,7 @@ fun FeedScreen(
                             Text(
                                 text = "A little moment worth sharing?",
                                 style = MaterialTheme.typography.bodyMedium.copy(
-                                    color = PlaceholderHint,
+                                    color = colors.placeholderText,
                                     fontSize = 14.sp
                                 ),
                                 modifier = Modifier.weight(1f)
@@ -327,7 +325,7 @@ fun FeedScreen(
                             Icon(
                                 imageVector = Icons.Default.Image,
                                 contentDescription = null,
-                                tint = SecondaryText,
+                                tint = colors.secondaryText,
                                 modifier = Modifier.size(18.dp)
                             )
                         }
@@ -335,7 +333,7 @@ fun FeedScreen(
                     Spacer(modifier = Modifier.height(6.dp))
                 }
 
-                // Posts Feed (Image-led vertical feed)
+                // Posts Feed
                 if (displayedPosts.isEmpty()) {
                     item {
                         Box(
@@ -348,13 +346,13 @@ fun FeedScreen(
                                 Text(
                                     text = "All caught up with your people.",
                                     style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.SemiBold),
-                                    color = PrimaryText
+                                    color = colors.primaryText
                                 )
                                 Spacer(modifier = Modifier.height(4.dp))
                                 Text(
                                     text = "A little less noise. A little more you.",
                                     style = MaterialTheme.typography.bodyMedium,
-                                    color = SecondaryText
+                                    color = colors.secondaryText
                                 )
                             }
                         }
@@ -387,13 +385,13 @@ fun FeedScreen(
                                 text = "All caught up with your people.",
                                 style = MaterialTheme.typography.labelLarge.copy(
                                     fontWeight = FontWeight.SemiBold,
-                                    color = PrimaryText
+                                    color = colors.primaryText
                                 )
                             )
                             Spacer(modifier = Modifier.height(2.dp))
                             Text(
                                 text = "A little less noise. A little more you.",
-                                style = MaterialTheme.typography.labelSmall.copy(color = SecondaryText)
+                                style = MaterialTheme.typography.labelSmall.copy(color = colors.secondaryText)
                             )
                         }
                     }
@@ -426,7 +424,8 @@ fun FeedScreen(
             if (burst != null) {
                 Surface(
                     shape = CircleShape,
-                    color = PureWhite,
+                    color = colors.cardSurface,
+                    border = androidx.compose.foundation.BorderStroke(1.dp, colors.divider),
                     shadowElevation = 6.dp,
                     modifier = Modifier.size(68.dp)
                 ) {

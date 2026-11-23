@@ -1,16 +1,23 @@
 package com.example
 
+import android.graphics.Color as AndroidColor
 import android.os.Bundle
 import androidx.activity.ComponentActivity
+import androidx.activity.SystemBarStyle
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.ui.CircleViewModel
@@ -19,15 +26,35 @@ import com.example.ui.components.CircleBottomBar
 import com.example.ui.screens.*
 import com.example.ui.theme.CircleTheme
 
-import androidx.compose.ui.unit.dp
-
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContent {
-            CircleTheme {
-                CircleApp()
+            val viewModel: CircleViewModel = viewModel(
+                factory = CircleViewModel.provideFactory(LocalContext.current)
+            )
+            val themeConfig by viewModel.themeConfig.collectAsStateWithLifecycle()
+            val isDark = themeConfig.resolveDarkTheme(isSystemInDarkTheme())
+
+            DisposableEffect(isDark) {
+                enableEdgeToEdge(
+                    statusBarStyle = if (isDark) {
+                        SystemBarStyle.dark(AndroidColor.TRANSPARENT)
+                    } else {
+                        SystemBarStyle.light(AndroidColor.TRANSPARENT, AndroidColor.TRANSPARENT)
+                    },
+                    navigationBarStyle = if (isDark) {
+                        SystemBarStyle.dark(AndroidColor.TRANSPARENT)
+                    } else {
+                        SystemBarStyle.light(AndroidColor.TRANSPARENT, AndroidColor.TRANSPARENT)
+                    }
+                )
+                onDispose {}
+            }
+
+            CircleTheme(themeConfig = themeConfig) {
+                CircleApp(viewModel = viewModel)
             }
         }
     }
@@ -36,7 +63,7 @@ class MainActivity : ComponentActivity() {
 @Composable
 fun CircleApp(
     viewModel: CircleViewModel = viewModel(
-        factory = CircleViewModel.provideFactory(androidx.compose.ui.platform.LocalContext.current)
+        factory = CircleViewModel.provideFactory(LocalContext.current)
     )
 ) {
     val currentScreen by viewModel.currentScreen.collectAsStateWithLifecycle()
@@ -51,6 +78,7 @@ fun CircleApp(
 
     Scaffold(
         modifier = Modifier.fillMaxSize(),
+        containerColor = MaterialTheme.colorScheme.background,
         bottomBar = {
             if (isPrimaryTab) {
                 CircleBottomBar(
@@ -117,6 +145,12 @@ fun CircleApp(
                 }
                 is Screen.SecurityVault -> {
                     SecurityVaultScreen(
+                        viewModel = viewModel,
+                        onBack = { viewModel.navigateBack() }
+                    )
+                }
+                is Screen.AppearanceThemes -> {
+                    AppearanceThemesScreen(
                         viewModel = viewModel,
                         onBack = { viewModel.navigateBack() }
                     )

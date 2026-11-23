@@ -5,7 +5,6 @@ import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.expandVertically
 import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -23,17 +22,16 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.data.model.FaqItem
 import com.example.data.model.SupportMessage
 import com.example.ui.CircleViewModel
 import com.example.ui.Screen
-import com.example.ui.theme.*
-import kotlinx.coroutines.launch
+import com.example.ui.theme.OrbynTheme
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -43,14 +41,15 @@ fun SupportFaqScreen(
 ) {
     BackHandler { onBack() }
 
-    val messages by viewModel.supportMessages.collectAsState()
+    val colors = OrbynTheme.colors
+    val colorScheme = MaterialTheme.colorScheme
+
+    val messages by viewModel.supportMessages.collectAsStateWithLifecycle()
     var selectedTab by remember { mutableIntStateOf(0) } // 0: Chatbot, 1: FAQ Directory
     var inputQuery by remember { mutableStateOf("") }
     var faqSearchQuery by remember { mutableStateOf("") }
-    val coroutineScope = rememberCoroutineScope()
     val listState = rememberLazyListState()
 
-    // Scroll to bottom when new messages arrive
     LaunchedEffect(messages.size) {
         if (messages.isNotEmpty()) {
             listState.animateScrollToItem(messages.size - 1)
@@ -58,6 +57,7 @@ fun SupportFaqScreen(
     }
 
     Scaffold(
+        containerColor = colors.canvas,
         topBar = {
             TopAppBar(
                 title = {
@@ -66,13 +66,13 @@ fun SupportFaqScreen(
                             modifier = Modifier
                                 .size(36.dp)
                                 .clip(CircleShape)
-                                .background(CirclePurple),
+                                .background(colorScheme.primary),
                             contentAlignment = Alignment.Center
                         ) {
                             Icon(
                                 imageVector = Icons.Default.SmartToy,
                                 contentDescription = null,
-                                tint = PureWhite,
+                                tint = colorScheme.onPrimary,
                                 modifier = Modifier.size(20.dp)
                             )
                         }
@@ -80,21 +80,22 @@ fun SupportFaqScreen(
                         Column {
                             Text(
                                 text = "FAQ & Orbit Support Bot",
-                                style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold)
+                                style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
+                                color = colors.primaryText
                             )
                             Row(verticalAlignment = Alignment.CenterVertically) {
                                 Box(
                                     modifier = Modifier
                                         .size(6.dp)
                                         .clip(CircleShape)
-                                        .background(CloseFriendsGreen)
+                                        .background(colors.closeFriendsAccent)
                                 )
                                 Spacer(modifier = Modifier.width(4.dp))
                                 Text(
                                     text = "Automated Privacy Assistant • Instant Answers",
                                     style = MaterialTheme.typography.labelSmall.copy(
                                         fontSize = 10.sp,
-                                        color = SecondaryText
+                                        color = colors.secondaryText
                                     )
                                 )
                             }
@@ -106,11 +107,15 @@ fun SupportFaqScreen(
                         onClick = onBack,
                         modifier = Modifier.testTag("support_back_button")
                     ) {
-                        Icon(imageVector = Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
+                        Icon(
+                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                            contentDescription = "Back",
+                            tint = colors.primaryText
+                        )
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.background
+                    containerColor = colors.cardSurface
                 )
             )
         }
@@ -120,16 +125,17 @@ fun SupportFaqScreen(
                 .fillMaxSize()
                 .padding(innerPadding)
         ) {
-            // Tab Selector
             TabRow(
                 selectedTabIndex = selectedTab,
-                containerColor = MaterialTheme.colorScheme.surface,
-                contentColor = BrandPrimary,
-                divider = { HorizontalDivider(color = DividerOutline) }
+                containerColor = colors.cardSurface,
+                contentColor = colorScheme.primary,
+                divider = { HorizontalDivider(color = colors.divider) }
             ) {
                 Tab(
                     selected = selectedTab == 0,
                     onClick = { selectedTab = 0 },
+                    selectedContentColor = colorScheme.primary,
+                    unselectedContentColor = colors.secondaryText,
                     text = {
                         Row(verticalAlignment = Alignment.CenterVertically) {
                             Icon(Icons.Default.Chat, contentDescription = null, modifier = Modifier.size(16.dp))
@@ -141,6 +147,8 @@ fun SupportFaqScreen(
                 Tab(
                     selected = selectedTab == 1,
                     onClick = { selectedTab = 1 },
+                    selectedContentColor = colorScheme.primary,
+                    unselectedContentColor = colors.secondaryText,
                     text = {
                         Row(verticalAlignment = Alignment.CenterVertically) {
                             Icon(Icons.Default.HelpCenter, contentDescription = null, modifier = Modifier.size(16.dp))
@@ -152,9 +160,7 @@ fun SupportFaqScreen(
             }
 
             if (selectedTab == 0) {
-                // Interactive Bot Chat
                 Column(modifier = Modifier.fillMaxSize()) {
-                    // Quick FAQ Topic Pills
                     val quickTopics = listOf(
                         "Why can't my family download on Play Store?" to "Why can't my wife or friends download the app on Google Play due to age restriction?",
                         "Strict Invite-Only Circle" to "Can interactions in the app be limited to invited friends only?",
@@ -165,7 +171,7 @@ fun SupportFaqScreen(
                     )
 
                     Surface(
-                        color = MaterialTheme.colorScheme.surface,
+                        color = colors.cardSurface,
                         modifier = Modifier.fillMaxWidth()
                     ) {
                         Column(modifier = Modifier.padding(horizontal = 14.dp, vertical = 8.dp)) {
@@ -173,7 +179,7 @@ fun SupportFaqScreen(
                                 text = "POPULAR TOPICS (TAP TO ASK):",
                                 style = MaterialTheme.typography.labelSmall.copy(
                                     fontWeight = FontWeight.Bold,
-                                    color = SecondaryText,
+                                    color = colors.secondaryText,
                                     fontSize = 10.sp
                                 )
                             )
@@ -182,8 +188,8 @@ fun SupportFaqScreen(
                                 items(quickTopics) { (label, fullQuery) ->
                                     Surface(
                                         shape = RoundedCornerShape(16.dp),
-                                        color = MaterialTheme.colorScheme.surfaceVariant,
-                                        border = androidx.compose.foundation.BorderStroke(1.dp, DividerOutline),
+                                        color = colors.selectedContainer,
+                                        border = androidx.compose.foundation.BorderStroke(1.dp, colors.divider),
                                         modifier = Modifier.clickable {
                                             viewModel.sendSupportQuery(fullQuery)
                                         }
@@ -191,7 +197,7 @@ fun SupportFaqScreen(
                                         Text(
                                             text = label,
                                             style = MaterialTheme.typography.labelSmall.copy(
-                                                color = BrandPrimary,
+                                                color = colors.onSelectedContainer,
                                                 fontWeight = FontWeight.Medium
                                             ),
                                             modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp)
@@ -202,9 +208,8 @@ fun SupportFaqScreen(
                         }
                     }
 
-                    HorizontalDivider(color = DividerOutline)
+                    HorizontalDivider(color = colors.divider)
 
-                    // Chat messages list
                     LazyColumn(
                         state = listState,
                         modifier = Modifier
@@ -228,11 +233,12 @@ fun SupportFaqScreen(
                         }
                     }
 
-                    // Input field
                     Surface(
-                        color = MaterialTheme.colorScheme.surface,
-                        border = androidx.compose.foundation.BorderStroke(1.dp, DividerOutline),
-                        modifier = Modifier.fillMaxWidth()
+                        color = colors.cardSurface,
+                        border = androidx.compose.foundation.BorderStroke(1.dp, colors.divider),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .navigationBarsPadding()
                     ) {
                         Row(
                             modifier = Modifier
@@ -247,7 +253,7 @@ fun SupportFaqScreen(
                                     Text(
                                         "Ask anything (e.g. 'Play Store download', 'invite only')...",
                                         fontSize = 13.sp,
-                                        color = PlaceholderHint
+                                        color = colors.placeholderText
                                     )
                                 },
                                 modifier = Modifier
@@ -255,16 +261,16 @@ fun SupportFaqScreen(
                                     .testTag("support_input_field"),
                                 shape = RoundedCornerShape(22.dp),
                                 colors = OutlinedTextFieldDefaults.colors(
-                                    focusedTextColor = MaterialTheme.colorScheme.onSurface,
-                                    unfocusedTextColor = MaterialTheme.colorScheme.onSurface,
-                                    focusedBorderColor = BrandPrimary,
-                                    unfocusedBorderColor = DividerOutline,
-                                    cursorColor = BrandPrimary,
-                                    focusedContainerColor = MaterialTheme.colorScheme.surface,
-                                    unfocusedContainerColor = MaterialTheme.colorScheme.surface
+                                    focusedTextColor = colors.primaryText,
+                                    unfocusedTextColor = colors.primaryText,
+                                    focusedBorderColor = colorScheme.primary,
+                                    unfocusedBorderColor = colors.divider,
+                                    cursorColor = colorScheme.primary,
+                                    focusedContainerColor = colors.cardSurface,
+                                    unfocusedContainerColor = colors.cardSurface
                                 ),
                                 textStyle = MaterialTheme.typography.bodyMedium.copy(
-                                    color = MaterialTheme.colorScheme.onSurface
+                                    color = colors.primaryText
                                 ),
                                 maxLines = 3
                             )
@@ -281,14 +287,14 @@ fun SupportFaqScreen(
                                 modifier = Modifier
                                     .size(42.dp)
                                     .clip(CircleShape)
-                                    .background(if (inputQuery.isNotBlank()) BrandPrimary else MaterialTheme.colorScheme.surfaceVariant)
+                                    .background(if (inputQuery.isNotBlank()) colorScheme.primary else colors.elevatedSurface)
                                     .testTag("support_send_button"),
                                 enabled = inputQuery.isNotBlank()
                             ) {
                                 Icon(
                                     imageVector = Icons.AutoMirrored.Filled.Send,
                                     contentDescription = "Send",
-                                    tint = if (inputQuery.isNotBlank()) PureWhite else SecondaryText,
+                                    tint = if (inputQuery.isNotBlank()) colorScheme.onPrimary else colors.secondaryText,
                                     modifier = Modifier.size(18.dp)
                                 )
                             }
@@ -296,7 +302,6 @@ fun SupportFaqScreen(
                     }
                 }
             } else {
-                // Browse FAQs Directory
                 val staticFaqs = listOf(
                     FaqItem(
                         id = "faq_play_age",
@@ -341,27 +346,26 @@ fun SupportFaqScreen(
                         .fillMaxSize()
                         .padding(14.dp)
                 ) {
-                    // Search bar
                     OutlinedTextField(
                         value = faqSearchQuery,
                         onValueChange = { faqSearchQuery = it },
-                        placeholder = { Text("Search FAQ topics (e.g. 'download', 'photo')...", color = PlaceholderHint) },
-                        leadingIcon = { Icon(Icons.Default.Search, contentDescription = null, tint = SecondaryText) },
+                        placeholder = { Text("Search FAQ topics (e.g. 'download', 'photo')...", color = colors.placeholderText) },
+                        leadingIcon = { Icon(Icons.Default.Search, contentDescription = null, tint = colors.secondaryText) },
                         modifier = Modifier
                             .fillMaxWidth()
                             .testTag("faq_search_input"),
                         shape = RoundedCornerShape(14.dp),
                         colors = OutlinedTextFieldDefaults.colors(
-                            focusedTextColor = MaterialTheme.colorScheme.onSurface,
-                            unfocusedTextColor = MaterialTheme.colorScheme.onSurface,
-                            focusedBorderColor = BrandPrimary,
-                            unfocusedBorderColor = DividerOutline,
-                            cursorColor = BrandPrimary,
-                            focusedContainerColor = MaterialTheme.colorScheme.surface,
-                            unfocusedContainerColor = MaterialTheme.colorScheme.surface
+                            focusedTextColor = colors.primaryText,
+                            unfocusedTextColor = colors.primaryText,
+                            focusedBorderColor = colorScheme.primary,
+                            unfocusedBorderColor = colors.divider,
+                            cursorColor = colorScheme.primary,
+                            focusedContainerColor = colors.cardSurface,
+                            unfocusedContainerColor = colors.cardSurface
                         ),
                         textStyle = MaterialTheme.typography.bodyMedium.copy(
-                            color = MaterialTheme.colorScheme.onSurface
+                            color = colors.primaryText
                         ),
                         singleLine = true
                     )
@@ -389,7 +393,7 @@ fun SupportFaqScreen(
                             Spacer(modifier = Modifier.height(8.dp))
                             Card(
                                 shape = RoundedCornerShape(16.dp),
-                                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant),
+                                colors = CardDefaults.cardColors(containerColor = colors.selectedContainer),
                                 modifier = Modifier
                                     .fillMaxWidth()
                                     .clickable { selectedTab = 0 }
@@ -401,14 +405,14 @@ fun SupportFaqScreen(
                                     Icon(
                                         imageVector = Icons.Default.Chat,
                                         contentDescription = null,
-                                        tint = BrandPrimary,
+                                        tint = colorScheme.primary,
                                         modifier = Modifier.size(20.dp)
                                     )
                                     Spacer(modifier = Modifier.width(10.dp))
                                     Text(
                                         text = "Didn't find your answer? Chat live with Orbit Support Bot ➔",
                                         style = MaterialTheme.typography.labelMedium.copy(
-                                            color = BrandPrimary,
+                                            color = colors.onSelectedContainer,
                                             fontWeight = FontWeight.SemiBold
                                         )
                                     )
@@ -428,6 +432,8 @@ private fun SupportMessageBubble(
     message: SupportMessage,
     onActionClick: (String) -> Unit
 ) {
+    val colors = OrbynTheme.colors
+    val colorScheme = MaterialTheme.colorScheme
     val isBot = message.isFromBot
 
     Row(
@@ -440,13 +446,13 @@ private fun SupportMessageBubble(
                 modifier = Modifier
                     .size(32.dp)
                     .clip(CircleShape)
-                    .background(CirclePurple),
+                    .background(colorScheme.primary),
                 contentAlignment = Alignment.Center
             ) {
                 Icon(
                     imageVector = Icons.Default.SmartToy,
                     contentDescription = "Bot",
-                    tint = PureWhite,
+                    tint = colorScheme.onPrimary,
                     modifier = Modifier.size(18.dp)
                 )
             }
@@ -464,15 +470,15 @@ private fun SupportMessageBubble(
                     bottomStart = if (isBot) 4.dp else 16.dp,
                     bottomEnd = if (isBot) 16.dp else 4.dp
                 ),
-                color = if (isBot) MaterialTheme.colorScheme.surface else BrandPrimary,
-                border = if (isBot) androidx.compose.foundation.BorderStroke(1.dp, DividerOutline) else null,
+                color = if (isBot) colors.cardSurface else colorScheme.primary,
+                border = if (isBot) androidx.compose.foundation.BorderStroke(1.dp, colors.divider) else null,
                 shadowElevation = 1.dp
             ) {
                 Column(modifier = Modifier.padding(12.dp)) {
                     Text(
                         text = message.text,
                         style = MaterialTheme.typography.bodyMedium.copy(
-                            color = if (isBot) MaterialTheme.colorScheme.onSurface else PureWhite,
+                            color = if (isBot) colors.primaryText else colorScheme.onPrimary,
                             lineHeight = 20.sp
                         )
                     )
@@ -482,7 +488,8 @@ private fun SupportMessageBubble(
                         Button(
                             onClick = { onActionClick(message.actionType) },
                             colors = ButtonDefaults.buttonColors(
-                                containerColor = CirclePurple
+                                containerColor = colorScheme.primary,
+                                contentColor = colorScheme.onPrimary
                             ),
                             shape = RoundedCornerShape(10.dp),
                             contentPadding = PaddingValues(horizontal = 12.dp, vertical = 6.dp),
@@ -490,7 +497,6 @@ private fun SupportMessageBubble(
                         ) {
                             Text(
                                 text = message.actionLabel,
-                                color = PureWhite,
                                 style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold)
                             )
                         }
@@ -503,12 +509,14 @@ private fun SupportMessageBubble(
 
 @Composable
 private fun FaqExpandableCard(faq: FaqItem) {
+    val colors = OrbynTheme.colors
+    val colorScheme = MaterialTheme.colorScheme
     var expanded by remember { mutableStateOf(false) }
 
     Surface(
         shape = RoundedCornerShape(14.dp),
-        color = MaterialTheme.colorScheme.surface,
-        border = androidx.compose.foundation.BorderStroke(1.dp, DividerOutline),
+        color = colors.cardSurface,
+        border = androidx.compose.foundation.BorderStroke(1.dp, colors.divider),
         modifier = Modifier
             .fillMaxWidth()
             .clickable { expanded = !expanded }
@@ -523,7 +531,7 @@ private fun FaqExpandableCard(faq: FaqItem) {
                     Text(
                         text = faq.category.uppercase(),
                         style = MaterialTheme.typography.labelSmall.copy(
-                            color = BrandPrimary,
+                            color = colorScheme.primary,
                             fontWeight = FontWeight.Bold,
                             fontSize = 10.sp
                         )
@@ -533,14 +541,14 @@ private fun FaqExpandableCard(faq: FaqItem) {
                         text = faq.question,
                         style = MaterialTheme.typography.titleSmall.copy(
                             fontWeight = FontWeight.SemiBold,
-                            color = MaterialTheme.colorScheme.onSurface
+                            color = colors.primaryText
                         )
                     )
                 }
                 Icon(
                     imageVector = if (expanded) Icons.Default.ExpandLess else Icons.Default.ExpandMore,
                     contentDescription = null,
-                    tint = SecondaryText,
+                    tint = colors.secondaryText,
                     modifier = Modifier.size(20.dp)
                 )
             }
@@ -552,12 +560,12 @@ private fun FaqExpandableCard(faq: FaqItem) {
             ) {
                 Column {
                     Spacer(modifier = Modifier.height(10.dp))
-                    HorizontalDivider(color = DividerOutline)
+                    HorizontalDivider(color = colors.divider)
                     Spacer(modifier = Modifier.height(8.dp))
                     Text(
                         text = faq.answer,
                         style = MaterialTheme.typography.bodySmall.copy(
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            color = colors.secondaryText,
                             lineHeight = 18.sp
                         )
                     )

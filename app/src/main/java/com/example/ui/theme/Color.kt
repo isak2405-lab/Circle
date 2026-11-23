@@ -1,29 +1,645 @@
 package com.example.ui.theme
 
+import androidx.compose.material3.ColorScheme
+import androidx.compose.material3.darkColorScheme
+import androidx.compose.material3.lightColorScheme
+import androidx.compose.runtime.Immutable
 import androidx.compose.ui.graphics.Color
 
-// Exact Color Tokens from Circle Companion Design System
-val BrandPrimary = Color(0xFF6C5CE7)       // Main CTAs, active icons, unseen story rings, selected controls
-val AppCanvas = Color(0xFFFAF9FC)          // Very light lavender-white background
-val SurfaceColor = Color(0xFFFFFFFF)       // Cards, app bar, bottom navigation, sheets
-val PrimaryText = Color(0xFF242329)        // Titles and body copy; near-black, not purple
-val SecondaryText = Color(0xFF95919E)      // Timestamps, descriptions and inactive controls
-val DividerOutline = Color(0xFFEEEDF2)     // Subtle one-pixel borders
-val SelectedBackground = Color(0xFFF0EDFC) // Soft lavender selection fills
-val PlaceholderHint = Color(0xFFA39EAC)    // Input hints
+@Immutable
+data class OrbynThemePalette(
+    val lightColorScheme: ColorScheme,
+    val darkColorScheme: ColorScheme,
+    val lightExtended: OrbynExtendedColors,
+    val darkExtended: OrbynExtendedColors
+) {
+    fun colorScheme(isDark: Boolean): ColorScheme = if (isDark) darkColorScheme else lightColorScheme
+    fun extendedColors(isDark: Boolean): OrbynExtendedColors = if (isDark) darkExtended else lightExtended
+}
 
-// Semantic aliases
-val CirclePurple = BrandPrimary
-val CirclePurpleContainer = SelectedBackground
-val CloseFriendsGreen = Color(0xFF10B981)
-val CloseFriendsGreenContainer = Color(0xFFE8F8F2)
-val PureBlack = Color(0xFF0E0D14)
-val PureWhite = Color(0xFFFFFFFF)
+// Common semantic constants
+private val PureWhite = Color(0xFFFFFFFF)
+private val MediaOverlayScrim = Color(0xFF0A0A10)
+private val LightError = Color(0xFFDC2626)
+private val LightErrorContainer = Color(0xFFFEE2E2)
+private val LightOnErrorContainer = Color(0xFF991B1B)
+private val DarkError = Color(0xFFF87171)
+private val DarkErrorContainer = Color(0xFF451418)
+private val DarkOnErrorContainer = Color(0xFFFECACA)
 
-// Dark Theme support tokens (clean restrained dark)
-val DarkCanvas = Color(0xFF0F0E17)
-val DarkSurface = Color(0xFF171622)
-val DarkTextPrimary = Color(0xFFF4F3F7)
-val DarkTextSecondary = Color(0xFFA09DAA)
-val DarkOutline = Color(0xFF262436)
-val DarkSelected = Color(0xFF242038)
+private val LightCloseFriends = Color(0xFF059669)
+private val LightCloseFriendsContainer = Color(0xFFE6F7F1)
+private val DarkCloseFriends = Color(0xFF34D399)
+private val DarkCloseFriendsContainer = Color(0xFF10352A)
+private val DarkOnCloseFriends = Color(0xFF04261B)
+
+// 1. Royal Purple — Signature default ORBYN branding
+private val RoyalPurplePalette = OrbynThemePalette(
+    lightColorScheme = lightColorScheme(
+        primary = Color(0xFF6C5CE7),
+        onPrimary = PureWhite,
+        primaryContainer = Color(0xFFF0EDFC),
+        onPrimaryContainer = Color(0xFF4834D4),
+        secondary = LightCloseFriends,
+        onSecondary = PureWhite,
+        secondaryContainer = LightCloseFriendsContainer,
+        onSecondaryContainer = Color(0xFF065F46),
+        tertiary = Color(0xFF8B5CF6),
+        onTertiary = PureWhite,
+        background = Color(0xFFFAF9FC),
+        onBackground = Color(0xFF1F1E26),
+        surface = PureWhite,
+        onSurface = Color(0xFF1F1E26),
+        surfaceVariant = Color(0xFFF3F1FA),
+        onSurfaceVariant = Color(0xFF646070),
+        surfaceContainerLowest = PureWhite,
+        surfaceContainerLow = Color(0xFFFAF9FC),
+        surfaceContainer = Color(0xFFF5F3FA),
+        surfaceContainerHigh = Color(0xFFEEEBF7),
+        surfaceContainerHighest = Color(0xFFE7E3F3),
+        outline = Color(0xFFE6E4EE),
+        outlineVariant = Color(0xFFEEECF5),
+        error = LightError,
+        onError = PureWhite,
+        errorContainer = LightErrorContainer,
+        onErrorContainer = LightOnErrorContainer
+    ),
+    darkColorScheme = darkColorScheme(
+        primary = Color(0xFF9E8FF7),
+        onPrimary = Color(0xFF171036),
+        primaryContainer = Color(0xFF2B234D),
+        onPrimaryContainer = Color(0xFFE7E2FF),
+        secondary = DarkCloseFriends,
+        onSecondary = DarkOnCloseFriends,
+        secondaryContainer = DarkCloseFriendsContainer,
+        onSecondaryContainer = Color(0xFFA7F3D0),
+        tertiary = Color(0xFFC4B5FD),
+        onTertiary = Color(0xFF22134A),
+        background = Color(0xFF0E0D16),
+        onBackground = Color(0xFFF4F3FA),
+        surface = Color(0xFF171624),
+        onSurface = Color(0xFFF4F3FA),
+        surfaceVariant = Color(0xFF232036),
+        onSurfaceVariant = Color(0xFFABA7BA),
+        surfaceContainerLowest = Color(0xFF0A0911),
+        surfaceContainerLow = Color(0xFF141320),
+        surfaceContainer = Color(0xFF1B192B),
+        surfaceContainerHigh = Color(0xFF242138),
+        surfaceContainerHighest = Color(0xFF2D2A45),
+        outline = Color(0xFF2E2B42),
+        outlineVariant = Color(0xFF242236),
+        error = DarkError,
+        onError = Color(0xFF3E0A0D),
+        errorContainer = DarkErrorContainer,
+        onErrorContainer = DarkOnErrorContainer
+    ),
+    lightExtended = OrbynExtendedColors(
+        canvas = Color(0xFFFAF9FC),
+        cardSurface = PureWhite,
+        elevatedSurface = Color(0xFFF5F3FA),
+        primaryText = Color(0xFF1F1E26),
+        secondaryText = Color(0xFF646070),
+        placeholderText = Color(0xFF8B8698),
+        divider = Color(0xFFE6E4EE),
+        selectedContainer = Color(0xFFF0EDFC),
+        onSelectedContainer = Color(0xFF4834D4),
+        closeFriendsAccent = LightCloseFriends,
+        closeFriendsContainer = LightCloseFriendsContainer,
+        onCloseFriendsAccent = PureWhite,
+        warningContainer = LightErrorContainer,
+        onWarningContainer = LightOnErrorContainer,
+        mediaScrim = MediaOverlayScrim,
+        onMediaScrim = PureWhite,
+        isDark = false
+    ),
+    darkExtended = OrbynExtendedColors(
+        canvas = Color(0xFF0E0D16),
+        cardSurface = Color(0xFF171624),
+        elevatedSurface = Color(0xFF232036),
+        primaryText = Color(0xFFF4F3FA),
+        secondaryText = Color(0xFFABA7BA),
+        placeholderText = Color(0xFF868299),
+        divider = Color(0xFF2E2B42),
+        selectedContainer = Color(0xFF2B234D),
+        onSelectedContainer = Color(0xFFE7E2FF),
+        closeFriendsAccent = DarkCloseFriends,
+        closeFriendsContainer = DarkCloseFriendsContainer,
+        onCloseFriendsAccent = DarkOnCloseFriends,
+        warningContainer = DarkErrorContainer,
+        onWarningContainer = DarkOnErrorContainer,
+        mediaScrim = MediaOverlayScrim,
+        onMediaScrim = PureWhite,
+        isDark = true
+    )
+)
+
+// 2. Ocean Blue — Clean coastal clarity
+private val OceanBluePalette = OrbynThemePalette(
+    lightColorScheme = lightColorScheme(
+        primary = Color(0xFF0B6BCB),
+        onPrimary = PureWhite,
+        primaryContainer = Color(0xFFE5F2FE),
+        onPrimaryContainer = Color(0xFF07498C),
+        secondary = Color(0xFF0D9488),
+        onSecondary = PureWhite,
+        secondaryContainer = Color(0xFFE3F7F5),
+        onSecondaryContainer = Color(0xFF0F635B),
+        tertiary = Color(0xFF0284C7),
+        onTertiary = PureWhite,
+        background = Color(0xFFF7FAFD),
+        onBackground = Color(0xFF13202E),
+        surface = PureWhite,
+        onSurface = Color(0xFF13202E),
+        surfaceVariant = Color(0xFFECF4FC),
+        onSurfaceVariant = Color(0xFF53677A),
+        surfaceContainerLowest = PureWhite,
+        surfaceContainerLow = Color(0xFFF7FAFD),
+        surfaceContainer = Color(0xFFF0F6FC),
+        surfaceContainerHigh = Color(0xFFE5EFF9),
+        surfaceContainerHighest = Color(0xFFDCE9F6),
+        outline = Color(0xFFDBE7F3),
+        outlineVariant = Color(0xFFE6EFF8),
+        error = LightError,
+        onError = PureWhite,
+        errorContainer = LightErrorContainer,
+        onErrorContainer = LightOnErrorContainer
+    ),
+    darkColorScheme = darkColorScheme(
+        primary = Color(0xFF5EB5FF),
+        onPrimary = Color(0xFF05233D),
+        primaryContainer = Color(0xFF123454),
+        onPrimaryContainer = Color(0xFFD8EEFF),
+        secondary = Color(0xFF2DD4BF),
+        onSecondary = Color(0xFF042C28),
+        secondaryContainer = Color(0xFF113835),
+        onSecondaryContainer = Color(0xFFCCFBF1),
+        tertiary = Color(0xFF7DD3FC),
+        onTertiary = Color(0xFF07283A),
+        background = Color(0xFF0A121C),
+        onBackground = Color(0xFFF0F6FC),
+        surface = Color(0xFF121E2C),
+        onSurface = Color(0xFFF0F6FC),
+        surfaceVariant = Color(0xFF1A2A3D),
+        onSurfaceVariant = Color(0xFF9AB0C5),
+        surfaceContainerLowest = Color(0xFF070E16),
+        surfaceContainerLow = Color(0xFF101B28),
+        surfaceContainer = Color(0xFF162434),
+        surfaceContainerHigh = Color(0xFF1E2F44),
+        surfaceContainerHighest = Color(0xFF263B54),
+        outline = Color(0xFF24374D),
+        outlineVariant = Color(0xFF1C2C3F),
+        error = DarkError,
+        onError = Color(0xFF3E0A0D),
+        errorContainer = DarkErrorContainer,
+        onErrorContainer = DarkOnErrorContainer
+    ),
+    lightExtended = OrbynExtendedColors(
+        canvas = Color(0xFFF7FAFD),
+        cardSurface = PureWhite,
+        elevatedSurface = Color(0xFFF0F6FC),
+        primaryText = Color(0xFF13202E),
+        secondaryText = Color(0xFF53677A),
+        placeholderText = Color(0xFF7B8FA3),
+        divider = Color(0xFFDBE7F3),
+        selectedContainer = Color(0xFFE5F2FE),
+        onSelectedContainer = Color(0xFF07498C),
+        closeFriendsAccent = Color(0xFF0D9488),
+        closeFriendsContainer = Color(0xFFE3F7F5),
+        onCloseFriendsAccent = PureWhite,
+        warningContainer = LightErrorContainer,
+        onWarningContainer = LightOnErrorContainer,
+        mediaScrim = MediaOverlayScrim,
+        onMediaScrim = PureWhite,
+        isDark = false
+    ),
+    darkExtended = OrbynExtendedColors(
+        canvas = Color(0xFF0A121C),
+        cardSurface = Color(0xFF121E2C),
+        elevatedSurface = Color(0xFF1A2A3D),
+        primaryText = Color(0xFFF0F6FC),
+        secondaryText = Color(0xFF9AB0C5),
+        placeholderText = Color(0xFF758DA3),
+        divider = Color(0xFF24374D),
+        selectedContainer = Color(0xFF123454),
+        onSelectedContainer = Color(0xFFD8EEFF),
+        closeFriendsAccent = Color(0xFF2DD4BF),
+        closeFriendsContainer = Color(0xFF113835),
+        onCloseFriendsAccent = Color(0xFF042C28),
+        warningContainer = DarkErrorContainer,
+        onWarningContainer = DarkOnErrorContainer,
+        mediaScrim = MediaOverlayScrim,
+        onMediaScrim = PureWhite,
+        isDark = true
+    )
+)
+
+// 3. Emerald Green — Calm botanical elegance
+private val EmeraldGreenPalette = OrbynThemePalette(
+    lightColorScheme = lightColorScheme(
+        primary = Color(0xFF057A55),
+        onPrimary = PureWhite,
+        primaryContainer = Color(0xFFE4F7EF),
+        onPrimaryContainer = Color(0xFF03543F),
+        secondary = Color(0xFF0284C7),
+        onSecondary = PureWhite,
+        secondaryContainer = Color(0xFFE6F4FE),
+        onSecondaryContainer = Color(0xFF075985),
+        tertiary = Color(0xFF10B981),
+        onTertiary = PureWhite,
+        background = Color(0xFFF7FBF9),
+        onBackground = Color(0xFF14241E),
+        surface = PureWhite,
+        onSurface = Color(0xFF14241E),
+        surfaceVariant = Color(0xFFECF7F2),
+        onSurfaceVariant = Color(0xFF516B61),
+        surfaceContainerLowest = PureWhite,
+        surfaceContainerLow = Color(0xFFF7FBF9),
+        surfaceContainer = Color(0xFFEFF8F4),
+        surfaceContainerHigh = Color(0xFFE5F2EC),
+        surfaceContainerHighest = Color(0xFFDCECE5),
+        outline = Color(0xFFD9EAE2),
+        outlineVariant = Color(0xFFE5F2EC),
+        error = LightError,
+        onError = PureWhite,
+        errorContainer = LightErrorContainer,
+        onErrorContainer = LightOnErrorContainer
+    ),
+    darkColorScheme = darkColorScheme(
+        primary = Color(0xFF34D399),
+        onPrimary = Color(0xFF042C20),
+        primaryContainer = Color(0xFF103B2C),
+        onPrimaryContainer = Color(0xFFD1FAE5),
+        secondary = Color(0xFF38BDF8),
+        onSecondary = Color(0xFF06283B),
+        secondaryContainer = Color(0xFF103247),
+        onSecondaryContainer = Color(0xFFE0F2FE),
+        tertiary = Color(0xFF6EE7B7),
+        onTertiary = Color(0xFF042D20),
+        background = Color(0xFF0A1411),
+        onBackground = Color(0xFFEFFAF5),
+        surface = Color(0xFF12201B),
+        onSurface = Color(0xFFEFFAF5),
+        surfaceVariant = Color(0xFF1A2E27),
+        onSurfaceVariant = Color(0xFF9AB6AB),
+        surfaceContainerLowest = Color(0xFF070F0C),
+        surfaceContainerLow = Color(0xFF101C18),
+        surfaceContainer = Color(0xFF162620),
+        surfaceContainerHigh = Color(0xFF1D322A),
+        surfaceContainerHighest = Color(0xFF253E35),
+        outline = Color(0xFF233A31),
+        outlineVariant = Color(0xFF1B2E27),
+        error = DarkError,
+        onError = Color(0xFF3E0A0D),
+        errorContainer = DarkErrorContainer,
+        onErrorContainer = DarkOnErrorContainer
+    ),
+    lightExtended = OrbynExtendedColors(
+        canvas = Color(0xFFF7FBF9),
+        cardSurface = PureWhite,
+        elevatedSurface = Color(0xFFEFF8F4),
+        primaryText = Color(0xFF14241E),
+        secondaryText = Color(0xFF516B61),
+        placeholderText = Color(0xFF7A948A),
+        divider = Color(0xFFD9EAE2),
+        selectedContainer = Color(0xFFE4F7EF),
+        onSelectedContainer = Color(0xFF03543F),
+        closeFriendsAccent = Color(0xFF057A55),
+        closeFriendsContainer = Color(0xFFE4F7EF),
+        onCloseFriendsAccent = PureWhite,
+        warningContainer = LightErrorContainer,
+        onWarningContainer = LightOnErrorContainer,
+        mediaScrim = MediaOverlayScrim,
+        onMediaScrim = PureWhite,
+        isDark = false
+    ),
+    darkExtended = OrbynExtendedColors(
+        canvas = Color(0xFF0A1411),
+        cardSurface = Color(0xFF12201B),
+        elevatedSurface = Color(0xFF1A2E27),
+        primaryText = Color(0xFFEFFAF5),
+        secondaryText = Color(0xFF9AB6AB),
+        placeholderText = Color(0xFF769287),
+        divider = Color(0xFF233A31),
+        selectedContainer = Color(0xFF103B2C),
+        onSelectedContainer = Color(0xFFD1FAE5),
+        closeFriendsAccent = Color(0xFF34D399),
+        closeFriendsContainer = Color(0xFF103B2C),
+        onCloseFriendsAccent = Color(0xFF042C20),
+        warningContainer = DarkErrorContainer,
+        onWarningContainer = DarkOnErrorContainer,
+        mediaScrim = MediaOverlayScrim,
+        onMediaScrim = PureWhite,
+        isDark = true
+    )
+)
+
+// 4. Rose Pink — Modern soft rose identity
+private val RosePinkPalette = OrbynThemePalette(
+    lightColorScheme = lightColorScheme(
+        primary = Color(0xFFD6336C),
+        onPrimary = PureWhite,
+        primaryContainer = Color(0xFFFDE9F1),
+        onPrimaryContainer = Color(0xFF9C1B49),
+        secondary = Color(0xFF7C3AED),
+        onSecondary = PureWhite,
+        secondaryContainer = Color(0xFFF1EBFE),
+        onSecondaryContainer = Color(0xFF5B21B6),
+        tertiary = Color(0xFFEC4899),
+        onTertiary = PureWhite,
+        background = Color(0xFFFDF9FB),
+        onBackground = Color(0xFF26181F),
+        surface = PureWhite,
+        onSurface = Color(0xFF26181F),
+        surfaceVariant = Color(0xFFFAF0F4),
+        onSurfaceVariant = Color(0xFF735B66),
+        surfaceContainerLowest = PureWhite,
+        surfaceContainerLow = Color(0xFFFDF9FB),
+        surfaceContainer = Color(0xFFFAF1F5),
+        surfaceContainerHigh = Color(0xFFF5E6ED),
+        surfaceContainerHighest = Color(0xFFEFDCE5),
+        outline = Color(0xFFF0DFE7),
+        outlineVariant = Color(0xFFF6EAF0),
+        error = LightError,
+        onError = PureWhite,
+        errorContainer = LightErrorContainer,
+        onErrorContainer = LightOnErrorContainer
+    ),
+    darkColorScheme = darkColorScheme(
+        primary = Color(0xFFFB71A3),
+        onPrimary = Color(0xFF38091B),
+        primaryContainer = Color(0xFF4C182D),
+        onPrimaryContainer = Color(0xFFFFDFE9),
+        secondary = Color(0xFFA78BFA),
+        onSecondary = Color(0xFF24124D),
+        secondaryContainer = Color(0xFF312059),
+        onSecondaryContainer = Color(0xFFEDE9FE),
+        tertiary = Color(0xFFF472B6),
+        onTertiary = Color(0xFF3B0A23),
+        background = Color(0xFF160C11),
+        onBackground = Color(0xFFFDF2F6),
+        surface = Color(0xFF21131A),
+        onSurface = Color(0xFFFDF2F6),
+        surfaceVariant = Color(0xFF2E1B24),
+        onSurfaceVariant = Color(0xFFC2A3B0),
+        surfaceContainerLowest = Color(0xFF10080C),
+        surfaceContainerLow = Color(0xFF1C1016),
+        surfaceContainer = Color(0xFF26161E),
+        surfaceContainerHigh = Color(0xFF321E28),
+        surfaceContainerHighest = Color(0xFF3E2632),
+        outline = Color(0xFF3D2531),
+        outlineVariant = Color(0xFF301C26),
+        error = DarkError,
+        onError = Color(0xFF3E0A0D),
+        errorContainer = DarkErrorContainer,
+        onErrorContainer = DarkOnErrorContainer
+    ),
+    lightExtended = OrbynExtendedColors(
+        canvas = Color(0xFFFDF9FB),
+        cardSurface = PureWhite,
+        elevatedSurface = Color(0xFFFAF1F5),
+        primaryText = Color(0xFF26181F),
+        secondaryText = Color(0xFF735B66),
+        placeholderText = Color(0xFF99818C),
+        divider = Color(0xFFF0DFE7),
+        selectedContainer = Color(0xFFFDE9F1),
+        onSelectedContainer = Color(0xFF9C1B49),
+        closeFriendsAccent = LightCloseFriends,
+        closeFriendsContainer = LightCloseFriendsContainer,
+        onCloseFriendsAccent = PureWhite,
+        warningContainer = LightErrorContainer,
+        onWarningContainer = LightOnErrorContainer,
+        mediaScrim = MediaOverlayScrim,
+        onMediaScrim = PureWhite,
+        isDark = false
+    ),
+    darkExtended = OrbynExtendedColors(
+        canvas = Color(0xFF160C11),
+        cardSurface = Color(0xFF21131A),
+        elevatedSurface = Color(0xFF2E1B24),
+        primaryText = Color(0xFFFDF2F6),
+        secondaryText = Color(0xFFC2A3B0),
+        placeholderText = Color(0xFF9B7D8A),
+        divider = Color(0xFF3D2531),
+        selectedContainer = Color(0xFF4C182D),
+        onSelectedContainer = Color(0xFFFFDFE9),
+        closeFriendsAccent = DarkCloseFriends,
+        closeFriendsContainer = DarkCloseFriendsContainer,
+        onCloseFriendsAccent = DarkOnCloseFriends,
+        warningContainer = DarkErrorContainer,
+        onWarningContainer = DarkOnErrorContainer,
+        mediaScrim = MediaOverlayScrim,
+        onMediaScrim = PureWhite,
+        isDark = true
+    )
+)
+
+// 5. Sunset Gold — Warm golden hour identity
+private val SunsetGoldPalette = OrbynThemePalette(
+    lightColorScheme = lightColorScheme(
+        primary = Color(0xFFB45309),
+        onPrimary = PureWhite,
+        primaryContainer = Color(0xFFFEF2D8),
+        onPrimaryContainer = Color(0xFF78350F),
+        secondary = Color(0xFF059669),
+        onSecondary = PureWhite,
+        secondaryContainer = Color(0xFFE6F7F1),
+        onSecondaryContainer = Color(0xFF065F46),
+        tertiary = Color(0xFFD97706),
+        onTertiary = PureWhite,
+        background = Color(0xFFFDFBF6),
+        onBackground = Color(0xFF261E13),
+        surface = PureWhite,
+        onSurface = Color(0xFF261E13),
+        surfaceVariant = Color(0xFFFAF3E6),
+        onSurfaceVariant = Color(0xFF70614E),
+        surfaceContainerLowest = PureWhite,
+        surfaceContainerLow = Color(0xFFFDFBF6),
+        surfaceContainer = Color(0xFFFAF5EA),
+        surfaceContainerHigh = Color(0xFFF4ECDD),
+        surfaceContainerHighest = Color(0xFFEDE3D0),
+        outline = Color(0xFFEEE5D4),
+        outlineVariant = Color(0xFFF4EDE0),
+        error = LightError,
+        onError = PureWhite,
+        errorContainer = LightErrorContainer,
+        onErrorContainer = LightOnErrorContainer
+    ),
+    darkColorScheme = darkColorScheme(
+        primary = Color(0xFFFBBF24),
+        onPrimary = Color(0xFF2E1A03),
+        primaryContainer = Color(0xFF452E0D),
+        onPrimaryContainer = Color(0xFFFEF3C7),
+        secondary = DarkCloseFriends,
+        onSecondary = DarkOnCloseFriends,
+        secondaryContainer = DarkCloseFriendsContainer,
+        onSecondaryContainer = Color(0xFFA7F3D0),
+        tertiary = Color(0xFFF59E0B),
+        onTertiary = Color(0xFF2C1703),
+        background = Color(0xFF14100A),
+        onBackground = Color(0xFFFCF8F0),
+        surface = Color(0xFF1F1910),
+        onSurface = Color(0xFFFCF8F0),
+        surfaceVariant = Color(0xFF2C2316),
+        onSurfaceVariant = Color(0xFFC2B39C),
+        surfaceContainerLowest = Color(0xFF0E0B07),
+        surfaceContainerLow = Color(0xFF1A150D),
+        surfaceContainer = Color(0xFF241D13),
+        surfaceContainerHigh = Color(0xFF302619),
+        surfaceContainerHighest = Color(0xFF3B2F1F),
+        outline = Color(0xFF3A2F1F),
+        outlineVariant = Color(0xFF2E2417),
+        error = DarkError,
+        onError = Color(0xFF3E0A0D),
+        errorContainer = DarkErrorContainer,
+        onErrorContainer = DarkOnErrorContainer
+    ),
+    lightExtended = OrbynExtendedColors(
+        canvas = Color(0xFFFDFBF6),
+        cardSurface = PureWhite,
+        elevatedSurface = Color(0xFFFAF5EA),
+        primaryText = Color(0xFF261E13),
+        secondaryText = Color(0xFF70614E),
+        placeholderText = Color(0xFF968773),
+        divider = Color(0xFFEEE5D4),
+        selectedContainer = Color(0xFFFEF2D8),
+        onSelectedContainer = Color(0xFF78350F),
+        closeFriendsAccent = LightCloseFriends,
+        closeFriendsContainer = LightCloseFriendsContainer,
+        onCloseFriendsAccent = PureWhite,
+        warningContainer = LightErrorContainer,
+        onWarningContainer = LightOnErrorContainer,
+        mediaScrim = MediaOverlayScrim,
+        onMediaScrim = PureWhite,
+        isDark = false
+    ),
+    darkExtended = OrbynExtendedColors(
+        canvas = Color(0xFF14100A),
+        cardSurface = Color(0xFF1F1910),
+        elevatedSurface = Color(0xFF2C2316),
+        primaryText = Color(0xFFFCF8F0),
+        secondaryText = Color(0xFFC2B39C),
+        placeholderText = Color(0xFF9C8D77),
+        divider = Color(0xFF3A2F1F),
+        selectedContainer = Color(0xFF452E0D),
+        onSelectedContainer = Color(0xFFFEF3C7),
+        closeFriendsAccent = DarkCloseFriends,
+        closeFriendsContainer = DarkCloseFriendsContainer,
+        onCloseFriendsAccent = DarkOnCloseFriends,
+        warningContainer = DarkErrorContainer,
+        onWarningContainer = DarkOnErrorContainer,
+        mediaScrim = MediaOverlayScrim,
+        onMediaScrim = PureWhite,
+        isDark = true
+    )
+)
+
+// 6. Midnight — Premium obsidian & cool indigo identity
+private val MidnightPalette = OrbynThemePalette(
+    lightColorScheme = lightColorScheme(
+        primary = Color(0xFF2B3A67),
+        onPrimary = PureWhite,
+        primaryContainer = Color(0xFFE7ECF6),
+        onPrimaryContainer = Color(0xFF1A2442),
+        secondary = Color(0xFF4F46E5),
+        onSecondary = PureWhite,
+        secondaryContainer = Color(0xFFECEBFF),
+        onSecondaryContainer = Color(0xFF312E81),
+        tertiary = Color(0xFF475569),
+        onTertiary = PureWhite,
+        background = Color(0xFFF6F8FB),
+        onBackground = Color(0xFF141824),
+        surface = PureWhite,
+        onSurface = Color(0xFF141824),
+        surfaceVariant = Color(0xFFECEFF6),
+        onSurfaceVariant = Color(0xFF5A6378),
+        surfaceContainerLowest = PureWhite,
+        surfaceContainerLow = Color(0xFFF6F8FB),
+        surfaceContainer = Color(0xFFF0F2F8),
+        surfaceContainerHigh = Color(0xFFE6EAF3),
+        surfaceContainerHighest = Color(0xFFDDE2EE),
+        outline = Color(0xFFDFE4EF),
+        outlineVariant = Color(0xFFEAEFF7),
+        error = LightError,
+        onError = PureWhite,
+        errorContainer = LightErrorContainer,
+        onErrorContainer = LightOnErrorContainer
+    ),
+    darkColorScheme = darkColorScheme(
+        primary = Color(0xFF8C9EFF),
+        onPrimary = Color(0xFF0E1433),
+        primaryContainer = Color(0xFF1D2442),
+        onPrimaryContainer = Color(0xFFE2E8FF),
+        secondary = Color(0xFF60A5FA),
+        onSecondary = Color(0xFF08203E),
+        secondaryContainer = Color(0xFF162B47),
+        onSecondaryContainer = Color(0xFFDBEAFE),
+        tertiary = Color(0xFF94A3B8),
+        onTertiary = Color(0xFF0F172A),
+        background = Color(0xFF06080F),
+        onBackground = Color(0xFFF1F5FF),
+        surface = Color(0xFF0E121F),
+        onSurface = Color(0xFFF1F5FF),
+        surfaceVariant = Color(0xFF171D30),
+        onSurfaceVariant = Color(0xFF96A3C2),
+        surfaceContainerLowest = Color(0xFF030408),
+        surfaceContainerLow = Color(0xFF0B0F1A),
+        surfaceContainer = Color(0xFF121829),
+        surfaceContainerHigh = Color(0xFF1B2238),
+        surfaceContainerHighest = Color(0xFF242D47),
+        outline = Color(0xFF222B45),
+        outlineVariant = Color(0xFF192036),
+        error = DarkError,
+        onError = Color(0xFF3E0A0D),
+        errorContainer = DarkErrorContainer,
+        onErrorContainer = DarkOnErrorContainer
+    ),
+    lightExtended = OrbynExtendedColors(
+        canvas = Color(0xFFF6F8FB),
+        cardSurface = PureWhite,
+        elevatedSurface = Color(0xFFF0F2F8),
+        primaryText = Color(0xFF141824),
+        secondaryText = Color(0xFF5A6378),
+        placeholderText = Color(0xFF818BA1),
+        divider = Color(0xFFDFE4EF),
+        selectedContainer = Color(0xFFE7ECF6),
+        onSelectedContainer = Color(0xFF1A2442),
+        closeFriendsAccent = LightCloseFriends,
+        closeFriendsContainer = LightCloseFriendsContainer,
+        onCloseFriendsAccent = PureWhite,
+        warningContainer = LightErrorContainer,
+        onWarningContainer = LightOnErrorContainer,
+        mediaScrim = MediaOverlayScrim,
+        onMediaScrim = PureWhite,
+        isDark = false
+    ),
+    darkExtended = OrbynExtendedColors(
+        canvas = Color(0xFF06080F),
+        cardSurface = Color(0xFF0E121F),
+        elevatedSurface = Color(0xFF171D30),
+        primaryText = Color(0xFFF1F5FF),
+        secondaryText = Color(0xFF96A3C2),
+        placeholderText = Color(0xFF727F9E),
+        divider = Color(0xFF222B45),
+        selectedContainer = Color(0xFF1D2442),
+        onSelectedContainer = Color(0xFFE2E8FF),
+        closeFriendsAccent = DarkCloseFriends,
+        closeFriendsContainer = DarkCloseFriendsContainer,
+        onCloseFriendsAccent = DarkOnCloseFriends,
+        warningContainer = DarkErrorContainer,
+        onWarningContainer = DarkOnErrorContainer,
+        mediaScrim = MediaOverlayScrim,
+        onMediaScrim = PureWhite,
+        isDark = true
+    )
+)
+
+object OrbynPalettes {
+    fun forTheme(theme: AppTheme): OrbynThemePalette = when (theme) {
+        AppTheme.ROYAL_PURPLE -> RoyalPurplePalette
+        AppTheme.OCEAN_BLUE -> OceanBluePalette
+        AppTheme.EMERALD_GREEN -> EmeraldGreenPalette
+        AppTheme.ROSE_PINK -> RosePinkPalette
+        AppTheme.SUNSET_GOLD -> SunsetGoldPalette
+        AppTheme.MIDNIGHT -> MidnightPalette
+    }
+}

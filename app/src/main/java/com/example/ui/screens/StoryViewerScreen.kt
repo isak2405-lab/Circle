@@ -26,15 +26,11 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil.compose.AsyncImage
 import com.example.data.model.ReactionType
-import com.example.data.model.UserStory
 import com.example.ui.CircleViewModel
-import com.example.ui.theme.CirclePurple
-import com.example.ui.theme.CloseFriendsGreen
-import com.example.ui.theme.CloseFriendsGreenContainer
-import com.example.ui.theme.PureWhite
-import kotlinx.coroutines.delay
+import com.example.ui.theme.OrbynTheme
 
 @Composable
 fun StoryViewerScreen(
@@ -44,8 +40,11 @@ fun StoryViewerScreen(
 ) {
     BackHandler { onClose() }
 
-    val stories by viewModel.stories.collectAsState()
-    var currentStoryIndex by remember { mutableIntStateOf(initialIndex.coerceIn(0, stories.size - 1)) }
+    val colors = OrbynTheme.colors
+    val colorScheme = MaterialTheme.colorScheme
+
+    val stories by viewModel.stories.collectAsStateWithLifecycle()
+    var currentStoryIndex by remember { mutableIntStateOf(initialIndex.coerceIn(0, (stories.size - 1).coerceAtLeast(0))) }
     var currentSlideIndex by remember { mutableIntStateOf(0) }
     var replyText by remember { mutableStateOf("") }
     var storyReactionEmoji by remember { mutableStateOf<String?>(null) }
@@ -59,12 +58,10 @@ fun StoryViewerScreen(
     val slides = currentStory.slides
     val currentSlide = slides.getOrNull(currentSlideIndex) ?: slides[0]
 
-    // Mark seen
     LaunchedEffect(currentStory.user.id) {
         viewModel.markStorySeen(currentStory.user.id)
     }
 
-    // Auto progress timer for current slide
     val progressAnim = remember(currentStoryIndex, currentSlideIndex) { Animatable(0f) }
 
     LaunchedEffect(currentStoryIndex, currentSlideIndex) {
@@ -73,7 +70,6 @@ fun StoryViewerScreen(
             targetValue = 1f,
             animationSpec = tween(durationMillis = 5000, easing = LinearEasing)
         )
-        // Advance to next slide or next user
         if (currentSlideIndex < slides.size - 1) {
             currentSlideIndex++
         } else if (currentStoryIndex < stories.size - 1) {
@@ -87,10 +83,9 @@ fun StoryViewerScreen(
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color.Black)
+            .background(colors.mediaScrim)
             .testTag("story_viewer_screen")
     ) {
-        // Main Image
         AsyncImage(
             model = currentSlide.mediaUrl,
             contentDescription = currentSlide.caption,
@@ -98,22 +93,20 @@ fun StoryViewerScreen(
             modifier = Modifier.fillMaxSize()
         )
 
-        // Gradient vignette for readability
         Box(
             modifier = Modifier
                 .fillMaxSize()
                 .background(
                     Brush.verticalGradient(
                         colors = listOf(
-                            Color.Black.copy(alpha = 0.65f),
+                            colors.mediaScrim.copy(alpha = 0.65f),
                             Color.Transparent,
-                            Color.Black.copy(alpha = 0.8f)
+                            colors.mediaScrim.copy(alpha = 0.8f)
                         )
                     )
                 )
         )
 
-        // Touch zones: Tap left (previous), Tap right (next)
         Box(
             modifier = Modifier
                 .fillMaxSize()
@@ -122,7 +115,6 @@ fun StoryViewerScreen(
                         onTap = { offset ->
                             val screenWidth = size.width
                             if (offset.x < screenWidth * 0.35f) {
-                                // Previous
                                 if (currentSlideIndex > 0) {
                                     currentSlideIndex--
                                 } else if (currentStoryIndex > 0) {
@@ -130,7 +122,6 @@ fun StoryViewerScreen(
                                     currentSlideIndex = 0
                                 }
                             } else {
-                                // Next
                                 if (currentSlideIndex < slides.size - 1) {
                                     currentSlideIndex++
                                 } else if (currentStoryIndex < stories.size - 1) {
@@ -145,14 +136,12 @@ fun StoryViewerScreen(
                 }
         )
 
-        // Top Controls: Segmented Progress Bars & User Info
         Column(
             modifier = Modifier
                 .fillMaxWidth()
                 .statusBarsPadding()
                 .padding(horizontal = 14.dp, vertical = 8.dp)
         ) {
-            // Segmented Progress Bars
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -170,13 +159,13 @@ fun StoryViewerScreen(
                             .weight(1f)
                             .height(2.5.dp)
                             .clip(RoundedCornerShape(2.dp))
-                            .background(Color.White.copy(alpha = 0.35f))
+                            .background(colors.onMediaScrim.copy(alpha = 0.35f))
                     ) {
                         Box(
                             modifier = Modifier
                                 .fillMaxWidth(fillFraction)
                                 .fillMaxHeight()
-                                .background(Color.White)
+                                .background(colors.onMediaScrim)
                         )
                     }
                 }
@@ -184,7 +173,6 @@ fun StoryViewerScreen(
 
             Spacer(modifier = Modifier.height(8.dp))
 
-            // User Info & Close
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 verticalAlignment = Alignment.CenterVertically
@@ -205,7 +193,7 @@ fun StoryViewerScreen(
                         Text(
                             text = currentStory.user.name,
                             style = MaterialTheme.typography.titleMedium.copy(
-                                color = PureWhite,
+                                color = colors.onMediaScrim,
                                 fontWeight = FontWeight.Bold
                             )
                         )
@@ -213,7 +201,7 @@ fun StoryViewerScreen(
                         Text(
                             text = currentSlide.timestamp,
                             style = MaterialTheme.typography.labelSmall.copy(
-                                color = PureWhite.copy(alpha = 0.7f)
+                                color = colors.onMediaScrim.copy(alpha = 0.7f)
                             )
                         )
                     }
@@ -227,13 +215,13 @@ fun StoryViewerScreen(
                                 modifier = Modifier
                                     .size(6.dp)
                                     .clip(CircleShape)
-                                    .background(CloseFriendsGreen)
+                                    .background(colors.closeFriendsAccent)
                             )
                             Spacer(modifier = Modifier.width(4.dp))
                             Text(
                                 text = "Close Friends Only",
                                 style = MaterialTheme.typography.labelSmall.copy(
-                                    color = CloseFriendsGreen,
+                                    color = colors.closeFriendsAccent,
                                     fontSize = 10.sp,
                                     fontWeight = FontWeight.Bold
                                 )
@@ -249,21 +237,20 @@ fun StoryViewerScreen(
                     Icon(
                         imageVector = Icons.Default.Close,
                         contentDescription = "Close",
-                        tint = PureWhite,
+                        tint = colors.onMediaScrim,
                         modifier = Modifier.size(24.dp)
                     )
                 }
             }
         }
 
-        // Slide Caption (if present)
         if (currentSlide.caption.isNotBlank()) {
             Box(
                 modifier = Modifier
                     .align(Alignment.Center)
                     .padding(32.dp)
                     .background(
-                        Color.Black.copy(alpha = 0.45f),
+                        colors.mediaScrim.copy(alpha = 0.5f),
                         RoundedCornerShape(16.dp)
                     )
                     .padding(horizontal = 16.dp, vertical = 10.dp)
@@ -271,14 +258,13 @@ fun StoryViewerScreen(
                 Text(
                     text = currentSlide.caption,
                     style = MaterialTheme.typography.titleMedium.copy(
-                        color = PureWhite,
+                        color = colors.onMediaScrim,
                         fontWeight = FontWeight.Medium
                     )
                 )
             }
         }
 
-        // Reaction Burst Overlay
         if (storyReactionEmoji != null) {
             Box(
                 modifier = Modifier.align(Alignment.Center),
@@ -291,7 +277,6 @@ fun StoryViewerScreen(
             }
         }
 
-        // Bottom Bar: Fast 3 Reactions (❤️, 😂, 🔥) + Direct Reply Field
         Column(
             modifier = Modifier
                 .align(Alignment.BottomCenter)
@@ -299,7 +284,6 @@ fun StoryViewerScreen(
                 .navigationBarsPadding()
                 .padding(horizontal = 16.dp, vertical = 12.dp)
         ) {
-            // Quick 3 reactions
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.Center,
@@ -308,12 +292,11 @@ fun StoryViewerScreen(
                 listOf(ReactionType.HEART, ReactionType.LAUGH, ReactionType.FIRE).forEach { reaction ->
                     Surface(
                         shape = CircleShape,
-                        color = Color.Black.copy(alpha = 0.5f),
+                        color = colors.mediaScrim.copy(alpha = 0.5f),
                         modifier = Modifier
                             .padding(horizontal = 8.dp)
                             .clickable {
                                 storyReactionEmoji = reaction.emoji
-                                // Also trigger direct message reaction to friend
                                 val conv = viewModel.conversations.value.find { it.friend.id == currentStory.user.id }
                                 if (conv != null) {
                                     viewModel.sendMessage(conv.id, "Reacted ${reaction.emoji} to your story")
@@ -331,7 +314,6 @@ fun StoryViewerScreen(
 
             Spacer(modifier = Modifier.height(10.dp))
 
-            // Reply input
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 verticalAlignment = Alignment.CenterVertically
@@ -342,18 +324,18 @@ fun StoryViewerScreen(
                     placeholder = {
                         Text(
                             "Reply to ${currentStory.user.name.split(" ")[0]}...",
-                            color = PureWhite.copy(alpha = 0.6f),
+                            color = colors.onMediaScrim.copy(alpha = 0.65f),
                             fontSize = 14.sp
                         )
                     },
                     modifier = Modifier.weight(1f),
                     shape = RoundedCornerShape(26.dp),
                     colors = OutlinedTextFieldDefaults.colors(
-                        focusedTextColor = PureWhite,
-                        unfocusedTextColor = PureWhite,
-                        focusedBorderColor = PureWhite,
-                        unfocusedBorderColor = PureWhite.copy(alpha = 0.5f),
-                        cursorColor = CirclePurple
+                        focusedTextColor = colors.onMediaScrim,
+                        unfocusedTextColor = colors.onMediaScrim,
+                        focusedBorderColor = colors.onMediaScrim,
+                        unfocusedBorderColor = colors.onMediaScrim.copy(alpha = 0.5f),
+                        cursorColor = colorScheme.primary
                     ),
                     maxLines = 1
                 )
@@ -373,12 +355,12 @@ fun StoryViewerScreen(
                     modifier = Modifier
                         .size(44.dp)
                         .clip(CircleShape)
-                        .background(if (replyText.isNotBlank()) CirclePurple else Color.White.copy(alpha = 0.2f))
+                        .background(if (replyText.isNotBlank()) colorScheme.primary else colors.onMediaScrim.copy(alpha = 0.2f))
                 ) {
                     Icon(
                         imageVector = Icons.AutoMirrored.Filled.Send,
                         contentDescription = "Send reply",
-                        tint = PureWhite,
+                        tint = if (replyText.isNotBlank()) colorScheme.onPrimary else colors.onMediaScrim,
                         modifier = Modifier.size(20.dp)
                     )
                 }

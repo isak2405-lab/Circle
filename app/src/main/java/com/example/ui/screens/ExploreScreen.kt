@@ -1,7 +1,6 @@
 package com.example.ui.screens
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -21,16 +20,16 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil.compose.AsyncImage
 import com.example.data.model.Post
 import com.example.ui.CircleViewModel
-import com.example.ui.theme.*
+import com.example.ui.theme.OrbynTheme
 
 @Composable
 fun ExploreScreen(
@@ -38,8 +37,11 @@ fun ExploreScreen(
     onPostClick: (Post) -> Unit,
     modifier: Modifier = Modifier
 ) {
-    val searchQuery by viewModel.exploreSearchQuery.collectAsState()
-    val selectedTag by viewModel.selectedExploreTag.collectAsState()
+    val colors = OrbynTheme.colors
+    val colorScheme = MaterialTheme.colorScheme
+
+    val searchQuery by viewModel.exploreSearchQuery.collectAsStateWithLifecycle()
+    val selectedTag by viewModel.selectedExploreTag.collectAsStateWithLifecycle()
     val friends = remember { viewModel.getFriends() }
 
     var selectedTab by remember { mutableIntStateOf(0) } // 0: Moments, 1: People
@@ -53,7 +55,6 @@ fun ExploreScreen(
         "#shinjuku"
     )
 
-    // Curated Explore Moments
     val exploreMoments = listOf(
         ExploreItem("e1", "https://images.unsplash.com/photo-1517841905240-472988babdf9?w=600&auto=format&fit=crop&q=80", "Maya Lin", "#filmphotography", false),
         ExploreItem("e2", "https://images.unsplash.com/photo-1470225620780-dba8ba36b745?w=600&auto=format&fit=crop&q=80", "Leo Chen", "#soundtrack", true),
@@ -81,7 +82,7 @@ fun ExploreScreen(
         modifier = modifier
             .fillMaxSize()
             .statusBarsPadding()
-            .background(AppCanvas)
+            .background(colors.canvas)
     ) {
         // Rounded Search Field
         Row(
@@ -97,16 +98,16 @@ fun ExploreScreen(
                     Text(
                         "Search friends, circles, or #tags...",
                         fontSize = 14.sp,
-                        color = PlaceholderHint
+                        color = colors.placeholderText
                     )
                 },
                 leadingIcon = {
-                    Icon(imageVector = Icons.Default.Search, contentDescription = null, tint = SecondaryText, modifier = Modifier.size(20.dp))
+                    Icon(imageVector = Icons.Default.Search, contentDescription = null, tint = colors.secondaryText, modifier = Modifier.size(20.dp))
                 },
                 trailingIcon = {
                     if (searchQuery.isNotEmpty()) {
                         IconButton(onClick = { viewModel.updateSearchQuery("") }) {
-                            Icon(imageVector = Icons.Default.Clear, contentDescription = "Clear", tint = SecondaryText)
+                            Icon(imageVector = Icons.Default.Clear, contentDescription = "Clear", tint = colors.secondaryText)
                         }
                     }
                 },
@@ -115,11 +116,15 @@ fun ExploreScreen(
                     .testTag("explore_search_input"),
                 shape = RoundedCornerShape(20.dp),
                 colors = OutlinedTextFieldDefaults.colors(
-                    focusedBorderColor = BrandPrimary,
-                    unfocusedBorderColor = DividerOutline,
-                    focusedContainerColor = SurfaceColor,
-                    unfocusedContainerColor = SurfaceColor
+                    focusedTextColor = colors.primaryText,
+                    unfocusedTextColor = colors.primaryText,
+                    focusedBorderColor = colorScheme.primary,
+                    unfocusedBorderColor = colors.divider,
+                    cursorColor = colorScheme.primary,
+                    focusedContainerColor = colors.cardSurface,
+                    unfocusedContainerColor = colors.cardSurface
                 ),
+                textStyle = MaterialTheme.typography.bodyMedium.copy(color = colors.primaryText),
                 singleLine = true
             )
         }
@@ -135,8 +140,8 @@ fun ExploreScreen(
                 val isSelected = selectedTab == index
                 Surface(
                     shape = RoundedCornerShape(10.dp),
-                    color = if (isSelected) SelectedBackground else SurfaceColor,
-                    border = if (isSelected) null else androidx.compose.foundation.BorderStroke(1.dp, DividerOutline),
+                    color = if (isSelected) colors.selectedContainer else colors.cardSurface,
+                    border = if (isSelected) null else androidx.compose.foundation.BorderStroke(1.dp, colors.divider),
                     modifier = Modifier
                         .clickable { selectedTab = index }
                         .testTag("explore_tab_$index")
@@ -146,7 +151,7 @@ fun ExploreScreen(
                         style = MaterialTheme.typography.labelMedium.copy(
                             fontWeight = if (isSelected) FontWeight.SemiBold else FontWeight.Normal,
                             fontSize = 13.sp,
-                            color = if (isSelected) BrandPrimary else SecondaryText
+                            color = if (isSelected) colors.onSelectedContainer else colors.secondaryText
                         ),
                         modifier = Modifier.padding(horizontal = 16.dp, vertical = 6.dp)
                     )
@@ -156,7 +161,7 @@ fun ExploreScreen(
 
         Spacer(modifier = Modifier.height(10.dp))
 
-        // Daily Tag Chips in Soft Lavender
+        // Daily Tag Chips
         LazyRow(
             contentPadding = PaddingValues(horizontal = 16.dp),
             horizontalArrangement = Arrangement.spacedBy(8.dp)
@@ -165,7 +170,7 @@ fun ExploreScreen(
                 val isSelected = selectedTag == tag
                 Surface(
                     shape = RoundedCornerShape(12.dp),
-                    color = if (isSelected) BrandPrimary else SelectedBackground,
+                    color = if (isSelected) colorScheme.primary else colors.selectedContainer,
                     modifier = Modifier
                         .clickable {
                             if (isSelected) viewModel.selectExploreTag(null) else viewModel.selectExploreTag(tag)
@@ -177,7 +182,7 @@ fun ExploreScreen(
                         style = MaterialTheme.typography.labelSmall.copy(
                             fontWeight = FontWeight.Medium,
                             fontSize = 12.sp,
-                            color = if (isSelected) PureWhite else PrimaryText
+                            color = if (isSelected) colorScheme.onPrimary else colors.onSelectedContainer
                         ),
                         modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp)
                     )
@@ -200,8 +205,8 @@ fun ExploreScreen(
                 items(filteredMoments, key = { it.id }) { item ->
                     Card(
                         shape = RoundedCornerShape(16.dp),
-                        colors = CardDefaults.cardColors(containerColor = SurfaceColor),
-                        border = androidx.compose.foundation.BorderStroke(1.dp, DividerOutline),
+                        colors = CardDefaults.cardColors(containerColor = colors.cardSurface),
+                        border = androidx.compose.foundation.BorderStroke(1.dp, colors.divider),
                         modifier = Modifier
                             .fillMaxWidth()
                             .height(200.dp)
@@ -218,7 +223,7 @@ fun ExploreScreen(
                             if (item.isVideo) {
                                 Surface(
                                     shape = CircleShape,
-                                    color = Color.Black.copy(alpha = 0.6f),
+                                    color = colors.mediaScrim.copy(alpha = 0.6f),
                                     modifier = Modifier
                                         .align(Alignment.TopEnd)
                                         .padding(8.dp)
@@ -228,7 +233,7 @@ fun ExploreScreen(
                                         Icon(
                                             imageVector = Icons.Default.PlayArrow,
                                             contentDescription = "Video",
-                                            tint = PureWhite,
+                                            tint = colors.onMediaScrim,
                                             modifier = Modifier.size(15.dp)
                                         )
                                     }
@@ -238,7 +243,7 @@ fun ExploreScreen(
                             // Bottom Caption Overlay
                             Surface(
                                 shape = RoundedCornerShape(topStart = 10.dp, topEnd = 10.dp),
-                                color = Color.Black.copy(alpha = 0.55f),
+                                color = colors.mediaScrim.copy(alpha = 0.58f),
                                 modifier = Modifier
                                     .fillMaxWidth()
                                     .align(Alignment.BottomCenter)
@@ -247,14 +252,14 @@ fun ExploreScreen(
                                     Text(
                                         text = item.author,
                                         style = MaterialTheme.typography.labelSmall.copy(
-                                            color = PureWhite,
+                                            color = colors.onMediaScrim,
                                             fontWeight = FontWeight.SemiBold
                                         )
                                     )
                                     Text(
                                         text = item.tag,
                                         style = MaterialTheme.typography.labelSmall.copy(
-                                            color = PureWhite.copy(alpha = 0.8f),
+                                            color = colors.onMediaScrim.copy(alpha = 0.8f),
                                             fontSize = 10.sp
                                         )
                                     )
@@ -276,8 +281,8 @@ fun ExploreScreen(
                 items(filteredPeople) { person ->
                     Surface(
                         shape = RoundedCornerShape(14.dp),
-                        color = SurfaceColor,
-                        border = androidx.compose.foundation.BorderStroke(1.dp, DividerOutline),
+                        color = colors.cardSurface,
+                        border = androidx.compose.foundation.BorderStroke(1.dp, colors.divider),
                         modifier = Modifier.fillMaxWidth()
                     ) {
                         Row(
@@ -302,20 +307,20 @@ fun ExploreScreen(
                                         fontSize = 14.sp,
                                         fontWeight = FontWeight.SemiBold
                                     ),
-                                    color = PrimaryText
+                                    color = colors.primaryText
                                 )
                                 Text(
                                     text = "@${person.username}",
                                     style = MaterialTheme.typography.bodySmall.copy(
                                         fontSize = 12.sp,
-                                        color = SecondaryText
+                                        color = colors.secondaryText
                                     )
                                 )
                                 if (person.bio.isNotBlank()) {
                                     Text(
                                         text = person.bio,
                                         style = MaterialTheme.typography.bodySmall.copy(fontSize = 12.sp),
-                                        color = PrimaryText,
+                                        color = colors.primaryText,
                                         maxLines = 1
                                     )
                                 }
@@ -324,6 +329,7 @@ fun ExploreScreen(
                             OutlinedButton(
                                 onClick = { /* Connect in Circle */ },
                                 shape = RoundedCornerShape(10.dp),
+                                border = androidx.compose.foundation.BorderStroke(1.dp, colors.divider),
                                 contentPadding = PaddingValues(horizontal = 10.dp, vertical = 4.dp),
                                 modifier = Modifier.height(32.dp)
                             ) {
@@ -331,7 +337,7 @@ fun ExploreScreen(
                                     text = if (person.isCloseFriend) "In circle" else "Add",
                                     style = MaterialTheme.typography.labelSmall.copy(
                                         fontWeight = FontWeight.Medium,
-                                        color = if (person.isCloseFriend) CloseFriendsGreen else BrandPrimary
+                                        color = if (person.isCloseFriend) colors.closeFriendsAccent else colorScheme.primary
                                     )
                                 )
                             }

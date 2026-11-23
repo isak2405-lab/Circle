@@ -1,46 +1,42 @@
 package com.example.ui.screens
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Check
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil.compose.AsyncImage
 import com.example.data.model.NotificationItem
 import com.example.data.model.NotificationType
 import com.example.ui.CircleViewModel
-import com.example.ui.theme.CirclePurple
-import com.example.ui.theme.CloseFriendsGreen
+import com.example.ui.theme.OrbynTheme
 
 @Composable
 fun NotificationsScreen(
     viewModel: CircleViewModel,
     modifier: Modifier = Modifier
 ) {
-    val notifications by viewModel.notifications.collectAsState()
+    val colors = OrbynTheme.colors
+    val notifications by viewModel.notifications.collectAsStateWithLifecycle()
 
     Column(
         modifier = modifier
             .fillMaxSize()
             .statusBarsPadding()
-            .background(MaterialTheme.colorScheme.background)
+            .background(colors.canvas)
     ) {
         // Header
         Row(
@@ -53,17 +49,17 @@ fun NotificationsScreen(
             Text(
                 text = "Activity",
                 style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold),
-                color = MaterialTheme.colorScheme.onSurface
+                color = colors.primaryText
             )
             Surface(
                 shape = RoundedCornerShape(12.dp),
-                color = MaterialTheme.colorScheme.surfaceVariant
+                color = colors.selectedContainer
             ) {
                 Text(
                     text = "Close Circle Only",
                     style = MaterialTheme.typography.labelSmall.copy(
                         fontWeight = FontWeight.Medium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                        color = colors.onSelectedContainer
                     ),
                     modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
                 )
@@ -79,7 +75,7 @@ fun NotificationsScreen(
             items(notifications, key = { it.id }) { notif ->
                 NotificationRow(notif = notif)
                 HorizontalDivider(
-                    color = MaterialTheme.colorScheme.outlineVariant,
+                    color = colors.divider,
                     thickness = 0.5.dp,
                     modifier = Modifier.padding(start = 76.dp, end = 20.dp)
                 )
@@ -90,6 +86,8 @@ fun NotificationsScreen(
 
 @Composable
 private fun NotificationRow(notif: NotificationItem) {
+    val colors = OrbynTheme.colors
+
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -119,7 +117,7 @@ private fun NotificationRow(notif: NotificationItem) {
 
             Surface(
                 shape = CircleShape,
-                color = MaterialTheme.colorScheme.surface,
+                color = colors.cardSurface,
                 shadowElevation = 2.dp,
                 modifier = Modifier
                     .size(20.dp)
@@ -138,13 +136,13 @@ private fun NotificationRow(notif: NotificationItem) {
             Text(
                 text = "${notif.user.name} ${notif.text}",
                 style = MaterialTheme.typography.bodyMedium.copy(lineHeight = 20.sp),
-                color = MaterialTheme.colorScheme.onSurface
+                color = colors.primaryText
             )
             Spacer(modifier = Modifier.height(2.dp))
             Text(
                 text = notif.timestamp,
                 style = MaterialTheme.typography.labelSmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
+                color = colors.secondaryText
             )
         }
 
@@ -162,13 +160,13 @@ private fun NotificationRow(notif: NotificationItem) {
         } else if (notif.type == NotificationType.NEW_CIRCLE_FRIEND) {
             Surface(
                 shape = RoundedCornerShape(12.dp),
-                color = CloseFriendsGreen.copy(alpha = 0.15f),
+                color = colors.closeFriendsContainer,
                 modifier = Modifier.padding(start = 8.dp)
             ) {
                 Text(
                     text = "Connected",
                     style = MaterialTheme.typography.labelSmall.copy(
-                        color = CloseFriendsGreen,
+                        color = colors.closeFriendsAccent,
                         fontWeight = FontWeight.Bold
                     ),
                     modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)

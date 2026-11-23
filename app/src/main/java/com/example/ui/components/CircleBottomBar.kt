@@ -1,7 +1,6 @@
 package com.example.ui.components
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
@@ -24,11 +23,7 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.dp
 import com.example.ui.Screen
-import com.example.ui.theme.BrandPrimary
-import com.example.ui.theme.DividerOutline
-import com.example.ui.theme.PureWhite
-import com.example.ui.theme.SecondaryText
-import com.example.ui.theme.SurfaceColor
+import com.example.ui.theme.OrbynTheme
 
 @Composable
 fun CircleBottomBar(
@@ -37,13 +32,16 @@ fun CircleBottomBar(
     onNavigate: (Screen) -> Unit,
     modifier: Modifier = Modifier
 ) {
+    val colors = OrbynTheme.colors
+    val colorScheme = MaterialTheme.colorScheme
+
     Surface(
         modifier = modifier
             .fillMaxWidth()
             .windowInsetsPadding(WindowInsets.navigationBars),
-        color = SurfaceColor,
+        color = colors.cardSurface,
         tonalElevation = 0.dp,
-        border = androidx.compose.foundation.BorderStroke(1.dp, DividerOutline)
+        border = androidx.compose.foundation.BorderStroke(1.dp, colors.divider)
     ) {
         Row(
             modifier = Modifier
@@ -80,12 +78,12 @@ fun CircleBottomBar(
                 onClick = { onNavigate(Screen.Memories) }
             )
 
-            // Create: Compact purple rounded-square plus button (as specified in prompt)
+            // Create: Compact themed rounded-square plus button
             Box(
                 modifier = Modifier
                     .size(36.dp)
                     .clip(RoundedCornerShape(10.dp))
-                    .background(BrandPrimary)
+                    .background(colorScheme.primary)
                     .clickable(
                         interactionSource = remember { MutableInteractionSource() },
                         indication = ripple()
@@ -96,7 +94,7 @@ fun CircleBottomBar(
                 Icon(
                     imageVector = Icons.Default.Add,
                     contentDescription = "Create",
-                    tint = PureWhite,
+                    tint = colorScheme.onPrimary,
                     modifier = Modifier.size(20.dp)
                 )
             }
@@ -132,10 +130,14 @@ private fun BottomBarNavItem(
     testTag: String,
     onClick: () -> Unit
 ) {
+    val colors = OrbynTheme.colors
+    val colorScheme = MaterialTheme.colorScheme
+
     Box(
         modifier = Modifier
             .size(48.dp)
             .clip(RoundedCornerShape(12.dp))
+            .background(if (selected) colors.selectedContainer.copy(alpha = 0.65f) else androidx.compose.ui.graphics.Color.Transparent)
             .clickable(
                 interactionSource = remember { MutableInteractionSource() },
                 indication = ripple()
@@ -146,7 +148,7 @@ private fun BottomBarNavItem(
         Icon(
             imageVector = icon,
             contentDescription = contentDescription,
-            tint = if (selected) BrandPrimary else SecondaryText,
+            tint = if (selected) colorScheme.primary else colors.secondaryText,
             modifier = Modifier.size(24.dp)
         )
 
@@ -155,7 +157,7 @@ private fun BottomBarNavItem(
                 modifier = Modifier
                     .size(7.dp)
                     .clip(CircleShape)
-                    .background(BrandPrimary)
+                    .background(colorScheme.primary)
                     .align(Alignment.TopEnd)
                     .offset(x = (-8).dp, y = 8.dp)
             )

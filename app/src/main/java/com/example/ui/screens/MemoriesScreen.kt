@@ -16,7 +16,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.blur
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
@@ -26,7 +25,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil.compose.AsyncImage
 import com.example.data.model.MemoryItem
 import com.example.ui.CircleViewModel
-import com.example.ui.theme.*
+import com.example.ui.theme.OrbynTheme
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -35,10 +34,13 @@ fun MemoriesScreen(
     onBack: () -> Unit
 ) {
     BackHandler { onBack() }
+    val colors = OrbynTheme.colors
+    val colorScheme = MaterialTheme.colorScheme
     val memories by viewModel.memories.collectAsStateWithLifecycle()
     val nextUnlockMemory = memories.firstOrNull { !it.isUnlocked }
 
     Scaffold(
+        containerColor = colors.canvas,
         topBar = {
             TopAppBar(
                 title = {
@@ -46,13 +48,14 @@ fun MemoriesScreen(
                         Icon(
                             imageVector = Icons.Default.HourglassTop,
                             contentDescription = null,
-                            tint = CirclePurple,
+                            tint = colorScheme.primary,
                             modifier = Modifier.size(20.dp)
                         )
                         Spacer(modifier = Modifier.width(8.dp))
                         Text(
                             text = "Memory Time Capsule",
-                            style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold)
+                            style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
+                            color = colors.primaryText
                         )
                     }
                 },
@@ -61,11 +64,15 @@ fun MemoriesScreen(
                         onClick = onBack,
                         modifier = Modifier.testTag("memories_back_button")
                     ) {
-                        Icon(imageVector = Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
+                        Icon(
+                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                            contentDescription = "Back",
+                            tint = colors.primaryText
+                        )
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.background
+                    containerColor = colors.cardSurface
                 )
             )
         }
@@ -81,8 +88,8 @@ fun MemoriesScreen(
             item {
                 Card(
                     shape = RoundedCornerShape(20.dp),
-                    colors = CardDefaults.cardColors(containerColor = CirclePurple.copy(alpha = 0.12f)),
-                    border = androidx.compose.foundation.BorderStroke(1.dp, CirclePurple.copy(alpha = 0.3f))
+                    colors = CardDefaults.cardColors(containerColor = colors.selectedContainer),
+                    border = androidx.compose.foundation.BorderStroke(1.dp, colorScheme.primary.copy(alpha = 0.25f))
                 ) {
                     Row(
                         modifier = Modifier
@@ -94,13 +101,13 @@ fun MemoriesScreen(
                             modifier = Modifier
                                 .size(48.dp)
                                 .clip(CircleShape)
-                                .background(CirclePurple),
+                                .background(colorScheme.primary),
                             contentAlignment = Alignment.Center
                         ) {
                             Icon(
                                 imageVector = Icons.Default.Timer,
                                 contentDescription = null,
-                                tint = PureWhite,
+                                tint = colorScheme.onPrimary,
                                 modifier = Modifier.size(24.dp)
                             )
                         }
@@ -110,14 +117,14 @@ fun MemoriesScreen(
                                 text = nextUnlockMemory?.unlockDate ?: "All capsules unlocked",
                                 style = MaterialTheme.typography.titleSmall.copy(
                                     fontWeight = FontWeight.Bold,
-                                    color = CirclePurple
+                                    color = colors.onSelectedContainer
                                 )
                             )
                             Spacer(modifier = Modifier.height(2.dp))
                             Text(
                                 text = "Sealed moments for your close circle unlock automatically over time.",
                                 style = MaterialTheme.typography.bodySmall,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                                color = colors.secondaryText
                             )
                         }
                     }
@@ -129,7 +136,7 @@ fun MemoriesScreen(
                     text = "TIME CAPSULE ARCHIVE",
                     style = MaterialTheme.typography.labelSmall.copy(
                         fontWeight = FontWeight.Bold,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        color = colors.secondaryText,
                         letterSpacing = 1.sp
                     )
                 )
@@ -148,10 +155,13 @@ fun MemoriesScreen(
 
 @Composable
 fun MemoryCardItem(memory: MemoryItem) {
+    val colors = OrbynTheme.colors
+    val colorScheme = MaterialTheme.colorScheme
+
     Card(
         shape = RoundedCornerShape(20.dp),
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-        border = androidx.compose.foundation.BorderStroke(1.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.5f)),
+        colors = CardDefaults.cardColors(containerColor = colors.cardSurface),
+        border = androidx.compose.foundation.BorderStroke(1.dp, colors.divider),
         modifier = Modifier.fillMaxWidth()
     ) {
         Column {
@@ -173,25 +183,25 @@ fun MemoryCardItem(memory: MemoryItem) {
                     Box(
                         modifier = Modifier
                             .fillMaxSize()
-                            .background(Color.Black.copy(alpha = 0.45f)),
+                            .background(colors.mediaScrim.copy(alpha = 0.45f)),
                         contentAlignment = Alignment.Center
                     ) {
                         Column(horizontalAlignment = Alignment.CenterHorizontally) {
                             Icon(
                                 imageVector = Icons.Default.Lock,
                                 contentDescription = "Locked",
-                                tint = PureWhite,
+                                tint = colors.onMediaScrim,
                                 modifier = Modifier.size(36.dp)
                             )
                             Spacer(modifier = Modifier.height(6.dp))
                             Surface(
                                 shape = RoundedCornerShape(8.dp),
-                                color = CirclePurple
+                                color = colorScheme.primary
                             ) {
                                 Text(
                                     text = memory.unlockDate,
                                     style = MaterialTheme.typography.labelSmall.copy(
-                                        color = PureWhite,
+                                        color = colorScheme.onPrimary,
                                         fontWeight = FontWeight.Bold,
                                         fontSize = 11.sp
                                     ),
@@ -203,7 +213,7 @@ fun MemoryCardItem(memory: MemoryItem) {
                 } else {
                     Surface(
                         shape = RoundedCornerShape(8.dp),
-                        color = CloseFriendsGreen,
+                        color = colors.closeFriendsAccent,
                         modifier = Modifier
                             .align(Alignment.TopEnd)
                             .padding(12.dp)
@@ -212,12 +222,17 @@ fun MemoryCardItem(memory: MemoryItem) {
                             modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
                             verticalAlignment = Alignment.CenterVertically
                         ) {
-                            Icon(imageVector = Icons.Default.Check, contentDescription = null, tint = PureWhite, modifier = Modifier.size(12.dp))
+                            Icon(
+                                imageVector = Icons.Default.Check,
+                                contentDescription = null,
+                                tint = colors.onCloseFriendsAccent,
+                                modifier = Modifier.size(12.dp)
+                            )
                             Spacer(modifier = Modifier.width(4.dp))
                             Text(
                                 text = "Unlocked",
                                 style = MaterialTheme.typography.labelSmall.copy(
-                                    color = PureWhite,
+                                    color = colors.onCloseFriendsAccent,
                                     fontWeight = FontWeight.Bold,
                                     fontSize = 10.sp
                                 )
@@ -230,13 +245,14 @@ fun MemoryCardItem(memory: MemoryItem) {
             Column(modifier = Modifier.padding(16.dp)) {
                 Text(
                     text = memory.title,
-                    style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold)
+                    style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
+                    color = colors.primaryText
                 )
                 Spacer(modifier = Modifier.height(4.dp))
                 Text(
                     text = memory.description,
                     style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                    color = colors.secondaryText
                 )
                 Spacer(modifier = Modifier.height(8.dp))
                 Row(
@@ -247,12 +263,12 @@ fun MemoryCardItem(memory: MemoryItem) {
                     Text(
                         text = "Created: ${memory.dateCreated}",
                         style = MaterialTheme.typography.labelSmall,
-                        color = SecondaryText
+                        color = colors.secondaryText
                     )
                     Text(
                         text = memory.unlockDate,
                         style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.SemiBold),
-                        color = if (memory.isUnlocked) CloseFriendsGreen else CirclePurple
+                        color = if (memory.isUnlocked) colors.closeFriendsAccent else colorScheme.primary
                     )
                 }
             }

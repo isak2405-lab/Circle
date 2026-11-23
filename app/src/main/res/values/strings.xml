@@ -1,3 +1,10 @@
 <resources>
     <string name="app_name">ORBYN</string>
+    <string name="appearance_and_themes_title">Appearance &amp; Themes</string>
+    <string name="appearance_and_themes_desc">Personalise ORBYN with 6 colour themes and Light, Dark, or System mode</string>
+    <string name="appearance_mode_section_title">APPEARANCE MODE</string>
+    <string name="theme_palette_section_title">COLOUR THEME</string>
+    <string name="live_preview_section_title">LIVE PREVIEW</string>
+    <string name="apply_theme_button">Save &amp; Apply</string>
+    <string name="reset_default_theme">Reset default</string>
 </resources>

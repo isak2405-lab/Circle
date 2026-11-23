@@ -2,8 +2,14 @@ package com.example.ui
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.data.local.InMemoryThemePreferenceStore
+import com.example.data.local.ThemePreferenceStore
+import com.example.data.local.ThemePreferencesRepository
 import com.example.data.model.*
 import com.example.data.repository.CircleRepository
+import com.example.ui.theme.AppTheme
+import com.example.ui.theme.AppearanceMode
+import com.example.ui.theme.ThemeConfig
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
@@ -19,18 +25,50 @@ sealed class Screen {
     data object ChatList : Screen()
     data class ChatDetail(val conversationId: String) : Screen()
     data object SecurityVault : Screen()
+    data object AppearanceThemes : Screen()
     data object SupportBot : Screen()
     data object Splash : Screen()
     data object Auth : Screen()
 }
 
 class CircleViewModel(
-    val repository: CircleRepository = CircleRepository()
+    val repository: CircleRepository = CircleRepository(),
+    private val themePreferenceStore: ThemePreferenceStore = InMemoryThemePreferenceStore()
 ) : ViewModel() {
 
     private val _screenStack = MutableStateFlow<List<Screen>>(listOf(Screen.Splash))
     val currentScreen: StateFlow<Screen> = _screenStack.map { it.lastOrNull() ?: Screen.Feed }
         .stateIn(viewModelScope, SharingStarted.Eagerly, Screen.Splash)
+
+    // Multi-theme reactive state backed by DataStore Preferences
+    val themeConfig: StateFlow<ThemeConfig> = themePreferenceStore.themeConfig
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.Eagerly,
+            initialValue = ThemeConfig()
+        )
+
+    fun setAppTheme(theme: AppTheme) {
+        viewModelScope.launch {
+            themePreferenceStore.setTheme(theme)
+        }
+    }
+
+    fun setAppearanceMode(mode: AppearanceMode) {
+        viewModelScope.launch {
+            themePreferenceStore.setAppearanceMode(mode)
+        }
+    }
+
+    fun updateThemeConfig(config: ThemeConfig) {
+        viewModelScope.launch {
+            themePreferenceStore.updateThemeConfig(config)
+        }
+    }
+
+    fun resetThemeToDefault() {
+        updateThemeConfig(ThemeConfig(theme = AppTheme.ROYAL_PURPLE, appearanceMode = AppearanceMode.SYSTEM))
+    }
 
     val currentUser = repository.currentUser
     val isAuthenticated = repository.isAuthenticated
@@ -360,9 +398,11 @@ class CircleViewModel(
             object : androidx.lifecycle.ViewModelProvider.Factory {
                 @Suppress("UNCHECKED_CAST")
                 override fun <T : androidx.lifecycle.ViewModel> create(modelClass: Class<T>): T {
-                    val db = com.example.data.local.OrbynDatabase.getInstance(context)
+                    val appContext = context.applicationContext
+                    val db = com.example.data.local.OrbynDatabase.getInstance(appContext)
                     val repo = com.example.data.repository.CircleRepository(db)
-                    return CircleViewModel(repo) as T
+                    val themeStore = ThemePreferencesRepository(appContext)
+                    return CircleViewModel(repo, themeStore) as T
                 }
             }
     }

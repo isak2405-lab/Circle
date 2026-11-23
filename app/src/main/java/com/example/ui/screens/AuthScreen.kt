@@ -30,13 +30,16 @@ import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
 import com.example.R
 import com.example.ui.CircleViewModel
-import com.example.ui.theme.*
+import com.example.ui.theme.OrbynTheme
 
 @Composable
 fun AuthScreen(
     viewModel: CircleViewModel,
     modifier: Modifier = Modifier
 ) {
+    val colors = OrbynTheme.colors
+    val colorScheme = MaterialTheme.colorScheme
+
     var isSignUp by remember { mutableStateOf(false) }
     var email by remember { mutableStateOf("alex@circle.app") }
     var password by remember { mutableStateOf("••••••••") }
@@ -51,33 +54,48 @@ fun AuthScreen(
     )
     var selectedAvatar by remember { mutableStateOf(avatarPresets[0]) }
 
+    val authInputColors = OutlinedTextFieldDefaults.colors(
+        focusedTextColor = colors.primaryText,
+        unfocusedTextColor = colors.primaryText,
+        focusedLabelColor = colorScheme.primary,
+        unfocusedLabelColor = colors.secondaryText,
+        focusedBorderColor = colorScheme.primary,
+        unfocusedBorderColor = colors.divider,
+        cursorColor = colorScheme.primary,
+        focusedContainerColor = colors.cardSurface,
+        unfocusedContainerColor = colors.cardSurface
+    )
+    val authTextStyle = MaterialTheme.typography.bodyMedium.copy(
+        color = colors.primaryText,
+        fontWeight = FontWeight.Medium
+    )
+
     Box(
         modifier = modifier
             .fillMaxSize()
+            .background(colors.canvas)
             .statusBarsPadding()
             .navigationBarsPadding()
-            .background(AppCanvas)
             .padding(24.dp),
         contentAlignment = Alignment.Center
     ) {
         Column(
             modifier = Modifier
                 .fillMaxWidth()
+                .widthIn(max = 460.dp)
                 .verticalScroll(rememberScrollState()),
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center
         ) {
-            // Circle Logo (Purple rounded square with overlapping white open rings)
             Icon(
                 painter = painterResource(id = R.drawable.ic_circle_logo),
-                contentDescription = "Circle Logo",
+                contentDescription = "ORBYN Logo",
                 tint = Color.Unspecified,
                 modifier = Modifier.size(68.dp)
             )
 
             Spacer(modifier = Modifier.height(14.dp))
 
-            // Lowercase wordmark "orbyn." with purple dot
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Text(
                     text = "orbyn",
@@ -86,7 +104,7 @@ fun AuthScreen(
                         letterSpacing = (-1.2).sp,
                         fontSize = 34.sp
                     ),
-                    color = PrimaryText
+                    color = colors.primaryText
                 )
                 Text(
                     text = ".",
@@ -94,20 +112,19 @@ fun AuthScreen(
                         fontWeight = FontWeight.Black,
                         fontSize = 34.sp
                     ),
-                    color = BrandPrimary
+                    color = colorScheme.primary
                 )
             }
 
             Spacer(modifier = Modifier.height(4.dp))
 
-            // Tagline: Your inner orbit. Less noise. Closer circle.
             Text(
                 text = "Your inner orbit. Less noise. Closer circle.",
                 style = MaterialTheme.typography.bodyMedium.copy(
                     fontWeight = FontWeight.Medium,
                     fontSize = 14.sp
                 ),
-                color = SecondaryText
+                color = colors.secondaryText
             )
 
             Spacer(modifier = Modifier.height(28.dp))
@@ -115,8 +132,8 @@ fun AuthScreen(
             // Google One-Tap Sign In Button
             Surface(
                 shape = RoundedCornerShape(12.dp),
-                color = SurfaceColor,
-                border = androidx.compose.foundation.BorderStroke(1.dp, DividerOutline),
+                color = colors.cardSurface,
+                border = androidx.compose.foundation.BorderStroke(1.dp, colors.divider),
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(48.dp)
@@ -134,7 +151,7 @@ fun AuthScreen(
                             fontWeight = FontWeight.SemiBold,
                             fontSize = 14.sp
                         ),
-                        color = PrimaryText
+                        color = colors.primaryText
                     )
                 }
             }
@@ -145,22 +162,21 @@ fun AuthScreen(
                 modifier = Modifier.fillMaxWidth(),
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                HorizontalDivider(modifier = Modifier.weight(1f), color = DividerOutline)
+                HorizontalDivider(modifier = Modifier.weight(1f), color = colors.divider)
                 Text(
                     text = " or with email ",
-                    style = MaterialTheme.typography.labelSmall.copy(color = SecondaryText)
+                    style = MaterialTheme.typography.labelSmall.copy(color = colors.secondaryText)
                 )
-                HorizontalDivider(modifier = Modifier.weight(1f), color = DividerOutline)
+                HorizontalDivider(modifier = Modifier.weight(1f), color = colors.divider)
             }
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // Onboarding fields
             if (isSignUp) {
                 Text(
                     text = "Choose your avatar",
                     style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.Medium),
-                    color = SecondaryText
+                    color = colors.secondaryText
                 )
                 Spacer(modifier = Modifier.height(8.dp))
                 LazyRow(
@@ -177,7 +193,7 @@ fun AuthScreen(
                                 .clip(CircleShape)
                                 .border(
                                     width = if (isChosen) 2.5.dp else 1.dp,
-                                    color = if (isChosen) BrandPrimary else DividerOutline,
+                                    color = if (isChosen) colorScheme.primary else colors.divider,
                                     shape = CircleShape
                                 )
                                 .clickable { selectedAvatar = url }
@@ -186,27 +202,11 @@ fun AuthScreen(
                 }
                 Spacer(modifier = Modifier.height(14.dp))
 
-                val authInputColors = OutlinedTextFieldDefaults.colors(
-                    focusedTextColor = MaterialTheme.colorScheme.onSurface,
-                    unfocusedTextColor = MaterialTheme.colorScheme.onSurface,
-                    focusedLabelColor = BrandPrimary,
-                    unfocusedLabelColor = SecondaryText,
-                    focusedBorderColor = BrandPrimary,
-                    unfocusedBorderColor = DividerOutline,
-                    cursorColor = BrandPrimary,
-                    focusedContainerColor = SurfaceColor,
-                    unfocusedContainerColor = SurfaceColor
-                )
-                val authTextStyle = MaterialTheme.typography.bodyMedium.copy(
-                    color = MaterialTheme.colorScheme.onSurface,
-                    fontWeight = FontWeight.Medium
-                )
-
                 OutlinedTextField(
                     value = name,
                     onValueChange = { name = it },
                     label = { Text("Your name") },
-                    leadingIcon = { Icon(Icons.Default.Person, contentDescription = null, tint = SecondaryText) },
+                    leadingIcon = { Icon(Icons.Default.Person, contentDescription = null, tint = colors.secondaryText) },
                     modifier = Modifier.fillMaxWidth().testTag("auth_name_input"),
                     shape = RoundedCornerShape(11.dp),
                     colors = authInputColors,
@@ -219,7 +219,14 @@ fun AuthScreen(
                     value = username,
                     onValueChange = { username = it },
                     label = { Text("Username") },
-                    leadingIcon = { Text("@", fontWeight = FontWeight.Bold, color = SecondaryText, modifier = Modifier.padding(start = 12.dp)) },
+                    leadingIcon = {
+                        Text(
+                            "@",
+                            fontWeight = FontWeight.Bold,
+                            color = colors.secondaryText,
+                            modifier = Modifier.padding(start = 12.dp)
+                        )
+                    },
                     modifier = Modifier.fillMaxWidth().testTag("auth_username_input"),
                     shape = RoundedCornerShape(11.dp),
                     colors = authInputColors,
@@ -229,31 +236,15 @@ fun AuthScreen(
                 Spacer(modifier = Modifier.height(10.dp))
             }
 
-            val defaultAuthInputColors = OutlinedTextFieldDefaults.colors(
-                focusedTextColor = MaterialTheme.colorScheme.onSurface,
-                unfocusedTextColor = MaterialTheme.colorScheme.onSurface,
-                focusedLabelColor = BrandPrimary,
-                unfocusedLabelColor = SecondaryText,
-                focusedBorderColor = BrandPrimary,
-                unfocusedBorderColor = DividerOutline,
-                cursorColor = BrandPrimary,
-                focusedContainerColor = SurfaceColor,
-                unfocusedContainerColor = SurfaceColor
-            )
-            val defaultAuthTextStyle = MaterialTheme.typography.bodyMedium.copy(
-                color = MaterialTheme.colorScheme.onSurface,
-                fontWeight = FontWeight.Medium
-            )
-
             OutlinedTextField(
                 value = email,
                 onValueChange = { email = it },
                 label = { Text("Email") },
-                leadingIcon = { Icon(Icons.Default.Email, contentDescription = null, tint = SecondaryText) },
+                leadingIcon = { Icon(Icons.Default.Email, contentDescription = null, tint = colors.secondaryText) },
                 modifier = Modifier.fillMaxWidth().testTag("auth_email_input"),
                 shape = RoundedCornerShape(11.dp),
-                colors = defaultAuthInputColors,
-                textStyle = defaultAuthTextStyle,
+                colors = authInputColors,
+                textStyle = authTextStyle,
                 singleLine = true
             )
 
@@ -263,12 +254,12 @@ fun AuthScreen(
                 value = password,
                 onValueChange = { password = it },
                 label = { Text("Password") },
-                leadingIcon = { Icon(Icons.Default.Lock, contentDescription = null, tint = SecondaryText) },
+                leadingIcon = { Icon(Icons.Default.Lock, contentDescription = null, tint = colors.secondaryText) },
                 visualTransformation = PasswordVisualTransformation(),
                 modifier = Modifier.fillMaxWidth().testTag("auth_password_input"),
                 shape = RoundedCornerShape(11.dp),
-                colors = defaultAuthInputColors,
-                textStyle = defaultAuthTextStyle,
+                colors = authInputColors,
+                textStyle = authTextStyle,
                 singleLine = true
             )
 
@@ -276,7 +267,10 @@ fun AuthScreen(
 
             Button(
                 onClick = { viewModel.login(email, if (isSignUp) username else "alexvance") },
-                colors = ButtonDefaults.buttonColors(containerColor = BrandPrimary),
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = colorScheme.primary,
+                    contentColor = colorScheme.onPrimary
+                ),
                 shape = RoundedCornerShape(11.dp),
                 modifier = Modifier
                     .fillMaxWidth()
@@ -285,8 +279,7 @@ fun AuthScreen(
             ) {
                 Text(
                     text = if (isSignUp) "Join Orbyn" else "Enter Orbyn",
-                    style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.SemiBold),
-                    color = PureWhite
+                    style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.SemiBold)
                 )
             }
 
@@ -298,7 +291,7 @@ fun AuthScreen(
             ) {
                 Text(
                     text = if (isSignUp) "Already have an account? Sign in" else "New here? Set up your orbit",
-                    color = BrandPrimary,
+                    color = colorScheme.primary,
                     style = MaterialTheme.typography.bodySmall.copy(fontWeight = FontWeight.Medium)
                 )
             }

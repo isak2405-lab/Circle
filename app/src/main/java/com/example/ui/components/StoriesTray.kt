@@ -16,7 +16,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
@@ -26,12 +25,7 @@ import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
 import com.example.data.model.User
 import com.example.data.model.UserStory
-import com.example.ui.theme.BrandPrimary
-import com.example.ui.theme.CloseFriendsGreen
-import com.example.ui.theme.DividerOutline
-import com.example.ui.theme.PrimaryText
-import com.example.ui.theme.PureWhite
-import com.example.ui.theme.SecondaryText
+import com.example.ui.theme.OrbynTheme
 
 @Composable
 fun StoriesTray(
@@ -41,6 +35,9 @@ fun StoriesTray(
     onAddStoryClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
+    val colors = OrbynTheme.colors
+    val colorScheme = MaterialTheme.colorScheme
+
     LazyRow(
         modifier = modifier
             .fillMaxWidth()
@@ -68,13 +65,13 @@ fun StoriesTray(
                         modifier = Modifier
                             .size(58.dp)
                             .clip(CircleShape)
-                            .border(1.dp, DividerOutline, CircleShape)
+                            .border(1.dp, colors.divider, CircleShape)
                     )
 
                     // Add badge (+)
                     Surface(
                         shape = CircleShape,
-                        color = BrandPrimary,
+                        color = colorScheme.primary,
                         shadowElevation = 2.dp,
                         modifier = Modifier
                             .size(20.dp)
@@ -84,7 +81,7 @@ fun StoriesTray(
                             Icon(
                                 imageVector = Icons.Default.Add,
                                 contentDescription = "Add moment",
-                                tint = PureWhite,
+                                tint = colorScheme.onPrimary,
                                 modifier = Modifier.size(14.dp)
                             )
                         }
@@ -98,19 +95,19 @@ fun StoriesTray(
                         fontSize = 11.sp,
                         fontWeight = FontWeight.Medium
                     ),
-                    color = PrimaryText,
+                    color = colors.primaryText,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis
                 )
             }
         }
 
-        // Friends Stories (Purple unseen rings, muted seen rings)
+        // Friends Stories (Themed unseen rings, muted seen rings)
         itemsIndexed(stories) { index, story ->
             val ringColor = when {
-                story.isSeen -> DividerOutline
-                story.isCloseFriendsOnly -> CloseFriendsGreen
-                else -> BrandPrimary
+                story.isSeen -> colors.divider
+                story.isCloseFriendsOnly -> colors.closeFriendsAccent
+                else -> colorScheme.primary
             }
 
             Column(
@@ -147,7 +144,7 @@ fun StoriesTray(
                         fontSize = 11.sp,
                         fontWeight = if (!story.isSeen) FontWeight.SemiBold else FontWeight.Normal
                     ),
-                    color = if (!story.isSeen) PrimaryText else SecondaryText,
+                    color = if (!story.isSeen) colors.primaryText else colors.secondaryText,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis
                 )

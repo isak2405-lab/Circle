@@ -1,7 +1,6 @@
 package com.example.ui.components
 
 import androidx.compose.animation.core.Spring
-import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.spring
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -32,7 +31,6 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
@@ -43,7 +41,7 @@ import coil.compose.AsyncImage
 import com.example.data.model.Post
 import com.example.data.model.PostType
 import com.example.data.model.ReactionType
-import com.example.ui.theme.*
+import com.example.ui.theme.OrbynTheme
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
@@ -55,6 +53,8 @@ fun PostCard(
     onSaveClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
+    val colors = OrbynTheme.colors
+    val colorScheme = MaterialTheme.colorScheme
     val coroutineScope = rememberCoroutineScope()
     var showDoubleTapHeart by remember { mutableStateOf(false) }
     var isVideoPlaying by remember { mutableStateOf(false) }
@@ -68,8 +68,8 @@ fun PostCard(
             .padding(horizontal = 16.dp, vertical = 6.dp)
             .testTag("post_card_${post.id}"),
         shape = RoundedCornerShape(18.dp),
-        colors = CardDefaults.cardColors(containerColor = SurfaceColor),
-        border = androidx.compose.foundation.BorderStroke(1.dp, DividerOutline),
+        colors = CardDefaults.cardColors(containerColor = colors.cardSurface),
+        border = androidx.compose.foundation.BorderStroke(1.dp, colors.divider),
         elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
     ) {
         Column(
@@ -94,7 +94,7 @@ fun PostCard(
                         .clip(CircleShape)
                         .border(
                             width = if (post.isCloseFriendsOnly) 1.5.dp else 1.dp,
-                            color = if (post.isCloseFriendsOnly) CloseFriendsGreen else DividerOutline,
+                            color = if (post.isCloseFriendsOnly) colors.closeFriendsAccent else colors.divider,
                             shape = CircleShape
                         )
                 )
@@ -109,13 +109,17 @@ fun PostCard(
                                 fontWeight = FontWeight.SemiBold,
                                 fontSize = 15.sp
                             ),
-                            color = PrimaryText
+                            color = colors.primaryText,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis,
+                            modifier = Modifier.weight(1f, fill = false)
                         )
                         Spacer(modifier = Modifier.width(6.dp))
                         Text(
                             text = "• ${post.timestamp}",
                             style = MaterialTheme.typography.labelSmall,
-                            color = SecondaryText
+                            color = colors.secondaryText,
+                            maxLines = 1
                         )
                     }
 
@@ -127,7 +131,7 @@ fun PostCard(
                             Icon(
                                 imageVector = Icons.Default.LocationOn,
                                 contentDescription = null,
-                                tint = SecondaryText,
+                                tint = colors.secondaryText,
                                 modifier = Modifier.size(11.dp)
                             )
                             Spacer(modifier = Modifier.width(2.dp))
@@ -135,7 +139,7 @@ fun PostCard(
                                 text = post.location,
                                 style = MaterialTheme.typography.labelSmall.copy(
                                     fontSize = 11.sp,
-                                    color = SecondaryText
+                                    color = colors.secondaryText
                                 ),
                                 maxLines = 1,
                                 overflow = TextOverflow.Ellipsis
@@ -148,7 +152,7 @@ fun PostCard(
                 if (post.isCloseFriendsOnly) {
                     Surface(
                         shape = RoundedCornerShape(10.dp),
-                        color = CloseFriendsGreenContainer,
+                        color = colors.closeFriendsContainer,
                         modifier = Modifier.padding(end = 4.dp)
                     ) {
                         Text(
@@ -156,8 +160,9 @@ fun PostCard(
                             style = MaterialTheme.typography.labelSmall.copy(
                                 fontWeight = FontWeight.SemiBold,
                                 fontSize = 10.sp,
-                                color = CloseFriendsGreen
+                                color = colors.closeFriendsAccent
                             ),
+                            maxLines = 1,
                             modifier = Modifier.padding(horizontal = 7.dp, vertical = 3.dp)
                         )
                     }
@@ -166,22 +171,23 @@ fun PostCard(
                 Box {
                     IconButton(
                         onClick = { showSafetyMenu = true },
-                        modifier = Modifier.size(24.dp)
+                        modifier = Modifier.size(28.dp)
                     ) {
                         Icon(
                             imageVector = Icons.Default.MoreHoriz,
                             contentDescription = "Menu",
-                            tint = SecondaryText,
+                            tint = colors.secondaryText,
                             modifier = Modifier.size(18.dp)
                         )
                     }
 
                     DropdownMenu(
                         expanded = showSafetyMenu,
-                        onDismissRequest = { showSafetyMenu = false }
+                        onDismissRequest = { showSafetyMenu = false },
+                        containerColor = colors.cardSurface
                     ) {
                         DropdownMenuItem(
-                            text = { Text("Report for Nudity or Sexual Content", fontSize = 13.sp) },
+                            text = { Text("Report for Nudity or Sexual Content", fontSize = 13.sp, color = colors.primaryText) },
                             onClick = {
                                 showSafetyMenu = false
                                 isShieldedByReport = true
@@ -189,7 +195,7 @@ fun PostCard(
                             }
                         )
                         DropdownMenuItem(
-                            text = { Text("Report for Abuse or Harassment", fontSize = 13.sp) },
+                            text = { Text("Report for Abuse or Harassment", fontSize = 13.sp, color = colors.primaryText) },
                             onClick = {
                                 showSafetyMenu = false
                                 isShieldedByReport = true
@@ -197,7 +203,7 @@ fun PostCard(
                             }
                         )
                         DropdownMenuItem(
-                            text = { Text("Block @${post.author.username}", fontSize = 13.sp, color = androidx.compose.ui.graphics.Color(0xFFE53935)) },
+                            text = { Text("Block @${post.author.username}", fontSize = 13.sp, color = colorScheme.error) },
                             onClick = {
                                 showSafetyMenu = false
                                 isShieldedByReport = true
@@ -211,7 +217,7 @@ fun PostCard(
             if (isShieldedByReport) {
                 Surface(
                     shape = RoundedCornerShape(12.dp),
-                    color = MaterialTheme.colorScheme.surfaceVariant,
+                    color = colors.elevatedSurface,
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(horizontal = 14.dp, vertical = 10.dp)
@@ -223,20 +229,20 @@ fun PostCard(
                         Icon(
                             imageVector = Icons.Default.Shield,
                             contentDescription = null,
-                            tint = BrandPrimary,
+                            tint = colorScheme.primary,
                             modifier = Modifier.size(18.dp)
                         )
                         Spacer(modifier = Modifier.width(8.dp))
                         Text(
                             text = reportNoticeText ?: "Moment hidden by safety shield.",
                             style = MaterialTheme.typography.bodySmall.copy(fontSize = 12.sp),
-                            color = PrimaryText,
+                            color = colors.primaryText,
                             modifier = Modifier.weight(1f)
                         )
                         Text(
                             text = "Undo",
                             style = MaterialTheme.typography.labelSmall.copy(
-                                color = BrandPrimary,
+                                color = colorScheme.primary,
                                 fontWeight = FontWeight.Bold
                             ),
                             modifier = Modifier.clickable { isShieldedByReport = false }
@@ -246,123 +252,166 @@ fun PostCard(
             } else {
                 Spacer(modifier = Modifier.height(10.dp))
 
-            // Body: Photo, Video, or Text Thought
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 12.dp)
-                    .clip(RoundedCornerShape(16.dp))
-                    .pointerInput(Unit) {
-                        detectTapGestures(
-                            onDoubleTap = {
-                                onReactionClick(ReactionType.HEART)
-                                showDoubleTapHeart = true
-                                coroutineScope.launch {
-                                    delay(750)
-                                    showDoubleTapHeart = false
+                // Body: Photo, Video, or Text Thought
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 12.dp)
+                        .clip(RoundedCornerShape(16.dp))
+                        .pointerInput(Unit) {
+                            detectTapGestures(
+                                onDoubleTap = {
+                                    onReactionClick(ReactionType.HEART)
+                                    showDoubleTapHeart = true
+                                    coroutineScope.launch {
+                                        delay(750)
+                                        showDoubleTapHeart = false
+                                    }
                                 }
-                            }
-                        )
-                    },
-                contentAlignment = Alignment.Center
-            ) {
-                when (post.type) {
-                    PostType.PHOTO -> {
-                        Box(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .aspectRatio(1.1f)
-                                .background(SelectedBackground)
-                        ) {
-                            AsyncImage(
-                                model = post.mediaUrl,
-                                contentDescription = post.caption,
-                                contentScale = ContentScale.Crop,
-                                modifier = Modifier.fillMaxSize()
                             )
-
-                            if (post.filterName != "Original") {
-                                Surface(
-                                    shape = RoundedCornerShape(6.dp),
-                                    color = PureBlack.copy(alpha = 0.5f),
-                                    modifier = Modifier
-                                        .align(Alignment.BottomStart)
-                                        .padding(10.dp)
-                                ) {
-                                    Text(
-                                        text = post.filterName,
-                                        style = MaterialTheme.typography.labelSmall.copy(
-                                            color = PureWhite,
-                                            fontSize = 9.sp
-                                        ),
-                                        modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
-                                    )
-                                }
-                            }
-                        }
-                    }
-
-                    PostType.VIDEO -> {
-                        Box(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .aspectRatio(1.1f)
-                                .background(SelectedBackground)
-                        ) {
-                            AsyncImage(
-                                model = post.mediaUrl,
-                                contentDescription = "Video moment",
-                                contentScale = ContentScale.Crop,
-                                modifier = Modifier.fillMaxSize()
-                            )
-
+                        },
+                    contentAlignment = Alignment.Center
+                ) {
+                    when (post.type) {
+                        PostType.PHOTO -> {
                             Box(
                                 modifier = Modifier
-                                    .fillMaxSize()
-                                    .background(Color.Black.copy(alpha = 0.15f)),
-                                contentAlignment = Alignment.Center
+                                    .fillMaxWidth()
+                                    .aspectRatio(1.1f)
+                                    .background(colors.selectedContainer)
                             ) {
-                                Surface(
-                                    shape = CircleShape,
-                                    color = PureBlack.copy(alpha = 0.6f),
-                                    modifier = Modifier
-                                        .size(48.dp)
-                                        .clickable { isVideoPlaying = !isVideoPlaying }
-                                ) {
-                                    Box(contentAlignment = Alignment.Center) {
-                                        Icon(
-                                            imageVector = Icons.Default.PlayArrow,
-                                            contentDescription = "Play video",
-                                            tint = PureWhite,
-                                            modifier = Modifier.size(28.dp)
+                                AsyncImage(
+                                    model = post.mediaUrl,
+                                    contentDescription = post.caption,
+                                    contentScale = ContentScale.Crop,
+                                    modifier = Modifier.fillMaxSize()
+                                )
+
+                                if (post.filterName != "Original") {
+                                    Surface(
+                                        shape = RoundedCornerShape(6.dp),
+                                        color = colors.mediaScrim.copy(alpha = 0.55f),
+                                        modifier = Modifier
+                                            .align(Alignment.BottomStart)
+                                            .padding(10.dp)
+                                    ) {
+                                        Text(
+                                            text = post.filterName,
+                                            style = MaterialTheme.typography.labelSmall.copy(
+                                                color = colors.onMediaScrim,
+                                                fontSize = 9.sp
+                                            ),
+                                            modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
                                         )
                                     }
                                 }
                             }
+                        }
 
-                            Surface(
-                                shape = RoundedCornerShape(10.dp),
-                                color = PureBlack.copy(alpha = 0.65f),
+                        PostType.VIDEO -> {
+                            Box(
                                 modifier = Modifier
-                                    .align(Alignment.BottomEnd)
-                                    .padding(10.dp)
+                                    .fillMaxWidth()
+                                    .aspectRatio(1.1f)
+                                    .background(colors.selectedContainer)
                             ) {
-                                Row(
-                                    modifier = Modifier.padding(horizontal = 7.dp, vertical = 3.dp),
-                                    verticalAlignment = Alignment.CenterVertically
+                                AsyncImage(
+                                    model = post.mediaUrl,
+                                    contentDescription = "Video moment",
+                                    contentScale = ContentScale.Crop,
+                                    modifier = Modifier.fillMaxSize()
+                                )
+
+                                Box(
+                                    modifier = Modifier
+                                        .fillMaxSize()
+                                        .background(colors.mediaScrim.copy(alpha = 0.15f)),
+                                    contentAlignment = Alignment.Center
                                 ) {
-                                    Icon(
-                                        imageVector = Icons.Default.VolumeUp,
-                                        contentDescription = null,
-                                        tint = PureWhite,
-                                        modifier = Modifier.size(11.dp)
-                                    )
-                                    Spacer(modifier = Modifier.width(4.dp))
+                                    Surface(
+                                        shape = CircleShape,
+                                        color = colors.mediaScrim.copy(alpha = 0.65f),
+                                        modifier = Modifier
+                                            .size(48.dp)
+                                            .clickable { isVideoPlaying = !isVideoPlaying }
+                                    ) {
+                                        Box(contentAlignment = Alignment.Center) {
+                                            Icon(
+                                                imageVector = Icons.Default.PlayArrow,
+                                                contentDescription = "Play video",
+                                                tint = colors.onMediaScrim,
+                                                modifier = Modifier.size(28.dp)
+                                            )
+                                        }
+                                    }
+                                }
+
+                                Surface(
+                                    shape = RoundedCornerShape(10.dp),
+                                    color = colors.mediaScrim.copy(alpha = 0.68f),
+                                    modifier = Modifier
+                                        .align(Alignment.BottomEnd)
+                                        .padding(10.dp)
+                                ) {
+                                    Row(
+                                        modifier = Modifier.padding(horizontal = 7.dp, vertical = 3.dp),
+                                        verticalAlignment = Alignment.CenterVertically
+                                    ) {
+                                        Icon(
+                                            imageVector = Icons.Default.VolumeUp,
+                                            contentDescription = null,
+                                            tint = colors.onMediaScrim,
+                                            modifier = Modifier.size(11.dp)
+                                        )
+                                        Spacer(modifier = Modifier.width(4.dp))
+                                        Text(
+                                            text = if (isVideoPlaying) "Playing 0:28" else "0:44 (max 60s)",
+                                            style = MaterialTheme.typography.labelSmall.copy(
+                                                color = colors.onMediaScrim,
+                                                fontSize = 10.sp
+                                            )
+                                        )
+                                    }
+                                }
+                            }
+                        }
+
+                        // Thought Card (Themed subtle container with accessible contrast in Light & Dark)
+                        PostType.THOUGHT -> {
+                            Box(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .background(colors.selectedContainer)
+                                    .padding(24.dp),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Column(
+                                    horizontalAlignment = Alignment.CenterHorizontally,
+                                    verticalArrangement = Arrangement.Center
+                                ) {
                                     Text(
-                                        text = if (isVideoPlaying) "Playing 0:28" else "0:44 (max 60s)",
+                                        text = "“",
+                                        fontSize = 36.sp,
+                                        lineHeight = 20.sp,
+                                        color = colorScheme.primary.copy(alpha = 0.6f),
+                                        fontFamily = FontFamily.Serif
+                                    )
+                                    Spacer(modifier = Modifier.height(4.dp))
+                                    Text(
+                                        text = post.thoughtText ?: "",
+                                        style = MaterialTheme.typography.bodyLarge.copy(
+                                            color = colors.primaryText,
+                                            fontSize = 16.sp,
+                                            lineHeight = 23.sp,
+                                            fontWeight = FontWeight.Normal
+                                        )
+                                    )
+                                    Spacer(modifier = Modifier.height(10.dp))
+                                    Text(
+                                        text = "— ${post.author.name}",
                                         style = MaterialTheme.typography.labelSmall.copy(
-                                            color = PureWhite,
-                                            fontSize = 10.sp
+                                            color = colors.secondaryText,
+                                            fontSize = 11.sp
                                         )
                                     )
                                 }
@@ -370,189 +419,146 @@ fun PostCard(
                         }
                     }
 
-                    // Thought Card (Soft lavender surface #F0EDFC with restrained editorial styling)
-                    PostType.THOUGHT -> {
-                        Box(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .background(SelectedBackground)
-                                .padding(24.dp),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            Column(
-                                horizontalAlignment = Alignment.CenterHorizontally,
-                                verticalArrangement = Arrangement.Center
-                            ) {
-                                Text(
-                                    text = "“",
-                                    fontSize = 36.sp,
-                                    lineHeight = 20.sp,
-                                    color = BrandPrimary.copy(alpha = 0.5f),
-                                    fontFamily = FontFamily.Serif
-                                )
-                                Spacer(modifier = Modifier.height(4.dp))
-                                Text(
-                                    text = post.thoughtText ?: "",
-                                    style = MaterialTheme.typography.bodyLarge.copy(
-                                        color = PrimaryText,
-                                        fontSize = 16.sp,
-                                        lineHeight = 23.sp,
-                                        fontWeight = FontWeight.Normal
-                                    )
-                                )
-                                Spacer(modifier = Modifier.height(10.dp))
-                                Text(
-                                    text = "— ${post.author.name}",
-                                    style = MaterialTheme.typography.labelSmall.copy(
-                                        color = SecondaryText,
-                                        fontSize = 11.sp
-                                    )
-                                )
-                            }
-                        }
-                    }
-                }
-
-                // Double Tap Animated Heart Overlay
-                androidx.compose.animation.AnimatedVisibility(
-                    visible = showDoubleTapHeart,
-                    enter = scaleIn(spring(dampingRatio = Spring.DampingRatioMediumBouncy)) + fadeIn(),
-                    exit = scaleOut() + fadeOut()
-                ) {
-                    Text(
-                        text = "❤️",
-                        fontSize = 72.sp
-                    )
-                }
-            }
-
-            Spacer(modifier = Modifier.height(8.dp))
-
-            // Interactions Row: Private 3 Reactions (❤️, 😂, 🔥) + Comment & Share controls (NO like totals)
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 14.dp),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                // Reaction Pill Container
-                Surface(
-                    shape = RoundedCornerShape(16.dp),
-                    color = AppCanvas,
-                    border = androidx.compose.foundation.BorderStroke(1.dp, DividerOutline),
-                    modifier = Modifier.height(34.dp)
-                ) {
-                    Row(
-                        modifier = Modifier.padding(horizontal = 4.dp),
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(2.dp)
+                    // Double Tap Animated Heart Overlay
+                    androidx.compose.animation.AnimatedVisibility(
+                        visible = showDoubleTapHeart,
+                        enter = scaleIn(spring(dampingRatio = Spring.DampingRatioMediumBouncy)) + fadeIn(),
+                        exit = scaleOut() + fadeOut()
                     ) {
-                        ReactionType.entries.forEach { reactionType ->
-                            val isSelected = post.userReaction == reactionType
-                            Box(
-                                modifier = Modifier
-                                    .clip(CircleShape)
-                                    .background(
-                                        if (isSelected) SelectedBackground else Color.Transparent
-                                    )
-                                    .clickable { onReactionClick(reactionType) }
-                                    .padding(horizontal = 7.dp, vertical = 3.dp)
-                                    .testTag("reaction_${reactionType.name.lowercase()}_${post.id}"),
-                                contentAlignment = Alignment.Center
-                            ) {
-                                Text(
-                                    text = reactionType.emoji,
-                                    fontSize = 15.sp
-                                )
-                            }
-                        }
+                        Text(
+                            text = "❤️",
+                            fontSize = 72.sp
+                        )
                     }
                 }
 
-                Spacer(modifier = Modifier.width(10.dp))
+                Spacer(modifier = Modifier.height(8.dp))
 
-                // Comment Button
-                IconButton(
-                    onClick = onCommentClick,
-                    modifier = Modifier
-                        .size(34.dp)
-                        .testTag("comment_button_${post.id}")
-                ) {
-                    Icon(
-                        imageVector = Icons.Outlined.ChatBubbleOutline,
-                        contentDescription = "Comments",
-                        tint = SecondaryText,
-                        modifier = Modifier.size(20.dp)
-                    )
-                }
-
-                Spacer(modifier = Modifier.width(4.dp))
-
-                // Share Button (Quiet friend share)
-                IconButton(
-                    onClick = { /* Share to private friend */ },
-                    modifier = Modifier.size(34.dp)
-                ) {
-                    Icon(
-                        imageVector = Icons.Outlined.Share,
-                        contentDescription = "Share",
-                        tint = SecondaryText,
-                        modifier = Modifier.size(20.dp)
-                    )
-                }
-
-                Spacer(modifier = Modifier.weight(1f))
-
-                // Bookmark / Save
-                IconButton(
-                    onClick = onSaveClick,
-                    modifier = Modifier
-                        .size(34.dp)
-                        .testTag("save_button_${post.id}")
-                ) {
-                    Icon(
-                        imageVector = if (post.isSaved) Icons.Filled.Bookmark else Icons.Outlined.BookmarkBorder,
-                        contentDescription = "Save",
-                        tint = if (post.isSaved) BrandPrimary else SecondaryText,
-                        modifier = Modifier.size(20.dp)
-                    )
-                }
-            }
-
-            // Caption
-            if (post.caption.isNotBlank()) {
-                Spacer(modifier = Modifier.height(4.dp))
+                // Interactions Row: Private 3 Reactions (❤️, 😂, 🔥) + Comment & Share controls
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(horizontal = 14.dp)
+                        .padding(horizontal = 14.dp),
+                    verticalAlignment = Alignment.CenterVertically
                 ) {
+                    // Reaction Pill Container
+                    Surface(
+                        shape = RoundedCornerShape(16.dp),
+                        color = colors.canvas,
+                        border = androidx.compose.foundation.BorderStroke(1.dp, colors.divider),
+                        modifier = Modifier.height(34.dp)
+                    ) {
+                        Row(
+                            modifier = Modifier.padding(horizontal = 4.dp),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(2.dp)
+                        ) {
+                            ReactionType.entries.forEach { reactionType ->
+                                val isSelected = post.userReaction == reactionType
+                                Box(
+                                    modifier = Modifier
+                                        .clip(CircleShape)
+                                        .background(
+                                            if (isSelected) colors.selectedContainer else Color.Transparent
+                                        )
+                                        .clickable { onReactionClick(reactionType) }
+                                        .padding(horizontal = 7.dp, vertical = 3.dp)
+                                        .testTag("reaction_${reactionType.name.lowercase()}_${post.id}"),
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    Text(
+                                        text = reactionType.emoji,
+                                        fontSize = 15.sp
+                                    )
+                                }
+                            }
+                        }
+                    }
+
+                    Spacer(modifier = Modifier.width(10.dp))
+
+                    // Comment Button
+                    IconButton(
+                        onClick = onCommentClick,
+                        modifier = Modifier
+                            .size(34.dp)
+                            .testTag("comment_button_${post.id}")
+                    ) {
+                        Icon(
+                            imageVector = Icons.Outlined.ChatBubbleOutline,
+                            contentDescription = "Comments",
+                            tint = colors.secondaryText,
+                            modifier = Modifier.size(20.dp)
+                        )
+                    }
+
+                    Spacer(modifier = Modifier.width(4.dp))
+
+                    // Share Button
+                    IconButton(
+                        onClick = { /* Share to private friend */ },
+                        modifier = Modifier.size(34.dp)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Outlined.Share,
+                            contentDescription = "Share",
+                            tint = colors.secondaryText,
+                            modifier = Modifier.size(20.dp)
+                        )
+                    }
+
+                    Spacer(modifier = Modifier.weight(1f))
+
+                    // Bookmark / Save
+                    IconButton(
+                        onClick = onSaveClick,
+                        modifier = Modifier
+                            .size(34.dp)
+                            .testTag("save_button_${post.id}")
+                    ) {
+                        Icon(
+                            imageVector = if (post.isSaved) Icons.Filled.Bookmark else Icons.Outlined.BookmarkBorder,
+                            contentDescription = "Save",
+                            tint = if (post.isSaved) colorScheme.primary else colors.secondaryText,
+                            modifier = Modifier.size(20.dp)
+                        )
+                    }
+                }
+
+                // Caption
+                if (post.caption.isNotBlank()) {
+                    Spacer(modifier = Modifier.height(4.dp))
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 14.dp)
+                    ) {
+                        Text(
+                            text = "${post.author.username}  ${post.caption}",
+                            style = MaterialTheme.typography.bodyMedium.copy(
+                                fontSize = 14.sp,
+                                lineHeight = 20.sp,
+                                color = colors.primaryText
+                            ),
+                            maxLines = 3,
+                            overflow = TextOverflow.Ellipsis
+                        )
+                    }
+                }
+
+                // Comments Preview
+                if (post.comments.isNotEmpty()) {
                     Text(
-                        text = "${post.author.username}  ${post.caption}",
-                        style = MaterialTheme.typography.bodyMedium.copy(
-                            fontSize = 14.sp,
-                            lineHeight = 20.sp,
-                            color = PrimaryText
+                        text = "View ${if (post.comments.size == 1) "1 comment" else "all ${post.comments.size} comments"}",
+                        style = MaterialTheme.typography.bodySmall.copy(
+                            color = colors.secondaryText,
+                            fontSize = 13.sp
                         ),
-                        maxLines = 3,
-                        overflow = TextOverflow.Ellipsis
+                        modifier = Modifier
+                            .clickable { onCommentClick() }
+                            .padding(horizontal = 14.dp, vertical = 2.dp)
                     )
                 }
-            }
-
-            // Comments Preview
-            if (post.comments.isNotEmpty()) {
-                Text(
-                    text = "View ${if (post.comments.size == 1) "1 comment" else "all ${post.comments.size} comments"}",
-                    style = MaterialTheme.typography.bodySmall.copy(
-                        color = SecondaryText,
-                        fontSize = 13.sp
-                    ),
-                    modifier = Modifier
-                        .clickable { onCommentClick() }
-                        .padding(horizontal = 14.dp, vertical = 2.dp)
-                )
-            }
             }
         }
     }

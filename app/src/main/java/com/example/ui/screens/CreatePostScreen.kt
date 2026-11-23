@@ -18,17 +18,17 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil.compose.AsyncImage
 import com.example.data.model.PostType
 import com.example.ui.CircleViewModel
-import com.example.ui.theme.*
+import com.example.ui.theme.OrbynTheme
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -36,11 +36,13 @@ fun CreatePostScreen(
     viewModel: CircleViewModel,
     onBack: () -> Unit
 ) {
+    val colors = OrbynTheme.colors
+    val colorScheme = MaterialTheme.colorScheme
+
     val aestheticFilters = viewModel.aestheticFilters
-    val postDraft by viewModel.postDraft.collectAsState()
+    val postDraft by viewModel.postDraft.collectAsStateWithLifecycle()
     val friends = remember { viewModel.getFriends() }
 
-    // Preset Aesthetic Photos to pick from
     val samplePhotos = listOf(
         "https://images.unsplash.com/photo-1517841905240-472988babdf9?w=900&auto=format&fit=crop&q=80",
         "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=900&auto=format&fit=crop&q=80",
@@ -49,7 +51,6 @@ fun CreatePostScreen(
         "https://images.unsplash.com/photo-1524504388940-b1c1722653e1?w=900&auto=format&fit=crop&q=80"
     )
 
-    // State initialized from draft if present
     var selectedType by remember { mutableStateOf(postDraft?.type ?: PostType.PHOTO) }
     var caption by remember { mutableStateOf(postDraft?.caption ?: "") }
     var thoughtText by remember { mutableStateOf(postDraft?.thoughtText ?: "") }
@@ -77,12 +78,14 @@ fun CreatePostScreen(
     }
 
     Scaffold(
+        containerColor = colors.canvas,
         topBar = {
             TopAppBar(
                 title = {
                     Text(
                         text = "New Moment",
-                        style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold)
+                        style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
+                        color = colors.primaryText
                     )
                 },
                 navigationIcon = {
@@ -103,7 +106,7 @@ fun CreatePostScreen(
                         },
                         modifier = Modifier.testTag("create_post_back_button")
                     ) {
-                        Icon(imageVector = Icons.Default.Close, contentDescription = "Cancel")
+                        Icon(imageVector = Icons.Default.Close, contentDescription = "Cancel", tint = colors.primaryText)
                     }
                 },
                 actions = {
@@ -124,7 +127,7 @@ fun CreatePostScreen(
                     ) {
                         Text(
                             text = if (draftSavedNotice) "Saved ✓" else "Save for later",
-                            color = MaterialTheme.colorScheme.primary,
+                            color = colorScheme.primary,
                             style = MaterialTheme.typography.labelMedium
                         )
                     }
@@ -152,7 +155,10 @@ fun CreatePostScreen(
                                 isCloseFriendsOnly = isCloseFriendsOnly
                             )
                         },
-                        colors = ButtonDefaults.buttonColors(containerColor = CirclePurple),
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = colorScheme.primary,
+                            contentColor = colorScheme.onPrimary
+                        ),
                         shape = RoundedCornerShape(12.dp),
                         modifier = Modifier
                             .padding(end = 8.dp)
@@ -161,11 +167,11 @@ fun CreatePostScreen(
                                 (selectedType == PostType.THOUGHT && thoughtText.isNotBlank()) ||
                                 caption.isNotBlank()
                     ) {
-                        Text("Share", color = PureWhite, fontWeight = FontWeight.SemiBold)
+                        Text("Share", fontWeight = FontWeight.SemiBold)
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.background
+                    containerColor = colors.cardSurface
                 )
             )
         }
@@ -180,7 +186,7 @@ fun CreatePostScreen(
             // Type Selector: Photo, Video, Thought
             Surface(
                 shape = RoundedCornerShape(16.dp),
-                color = MaterialTheme.colorScheme.surfaceVariant,
+                color = colors.elevatedSurface,
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(44.dp)
@@ -196,7 +202,7 @@ fun CreatePostScreen(
                                 .weight(1f)
                                 .fillMaxHeight()
                                 .clip(RoundedCornerShape(16.dp))
-                                .background(if (isSelected) MaterialTheme.colorScheme.surface else Color.Transparent)
+                                .background(if (isSelected) colors.cardSurface else Color.Transparent)
                                 .clickable { selectedType = type }
                                 .padding(vertical = 8.dp),
                             contentAlignment = Alignment.Center
@@ -210,7 +216,7 @@ fun CreatePostScreen(
                                 style = MaterialTheme.typography.labelMedium.copy(
                                     fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal
                                 ),
-                                color = if (isSelected) MaterialTheme.colorScheme.onSurface else MaterialTheme.colorScheme.onSurfaceVariant
+                                color = if (isSelected) colors.primaryText else colors.secondaryText
                             )
                         }
                     }
@@ -221,13 +227,12 @@ fun CreatePostScreen(
 
             // Media or Thought Input
             if (selectedType == PostType.THOUGHT) {
-                // Thought Composer Card
                 Card(
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(180.dp),
                     shape = RoundedCornerShape(20.dp),
-                    colors = CardDefaults.cardColors(containerColor = CirclePurple)
+                    colors = CardDefaults.cardColors(containerColor = colorScheme.primary)
                 ) {
                     Box(
                         modifier = Modifier
@@ -240,15 +245,16 @@ fun CreatePostScreen(
                             placeholder = {
                                 Text(
                                     "What's on your mind? Share an unfiltered thought with your circle...",
-                                    color = PureWhite.copy(alpha = 0.65f),
+                                    color = colorScheme.onPrimary.copy(alpha = 0.7f),
                                     fontSize = 16.sp
                                 )
                             },
                             colors = TextFieldDefaults.colors(
                                 focusedContainerColor = Color.Transparent,
                                 unfocusedContainerColor = Color.Transparent,
-                                focusedTextColor = PureWhite,
-                                unfocusedTextColor = PureWhite,
+                                focusedTextColor = colorScheme.onPrimary,
+                                unfocusedTextColor = colorScheme.onPrimary,
+                                cursorColor = colorScheme.onPrimary,
                                 focusedIndicatorColor = Color.Transparent,
                                 unfocusedIndicatorColor = Color.Transparent
                             ),
@@ -259,13 +265,12 @@ fun CreatePostScreen(
                     }
                 }
             } else {
-                // Media Preview with Active Filter
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
                         .aspectRatio(1.2f)
                         .clip(RoundedCornerShape(20.dp))
-                        .background(MaterialTheme.colorScheme.surfaceVariant),
+                        .background(colors.elevatedSurface),
                     contentAlignment = Alignment.Center
                 ) {
                     AsyncImage(
@@ -278,14 +283,14 @@ fun CreatePostScreen(
                     if (selectedType == PostType.VIDEO) {
                         Surface(
                             shape = CircleShape,
-                            color = Color.Black.copy(alpha = 0.6f),
+                            color = colors.mediaScrim.copy(alpha = 0.6f),
                             modifier = Modifier.size(54.dp)
                         ) {
                             Box(contentAlignment = Alignment.Center) {
                                 Icon(
                                     imageVector = Icons.Default.PlayArrow,
                                     contentDescription = "Video",
-                                    tint = PureWhite,
+                                    tint = colors.onMediaScrim,
                                     modifier = Modifier.size(32.dp)
                                 )
                             }
@@ -295,7 +300,7 @@ fun CreatePostScreen(
                     // Filter Label Chip
                     Surface(
                         shape = RoundedCornerShape(8.dp),
-                        color = Color.Black.copy(alpha = 0.6f),
+                        color = colors.mediaScrim.copy(alpha = 0.6f),
                         modifier = Modifier
                             .align(Alignment.BottomStart)
                             .padding(12.dp)
@@ -303,7 +308,7 @@ fun CreatePostScreen(
                         Text(
                             text = "Filter: $selectedFilter",
                             style = MaterialTheme.typography.labelSmall.copy(
-                                color = PureWhite,
+                                color = colors.onMediaScrim,
                                 fontSize = 10.sp
                             ),
                             modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
@@ -313,11 +318,10 @@ fun CreatePostScreen(
 
                 Spacer(modifier = Modifier.height(12.dp))
 
-                // Select from Camera Roll Shots
                 Text(
                     text = "Select Moment",
                     style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.SemiBold),
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                    color = colors.secondaryText
                 )
                 Spacer(modifier = Modifier.height(8.dp))
                 LazyRow(
@@ -334,7 +338,7 @@ fun CreatePostScreen(
                                 .clip(RoundedCornerShape(12.dp))
                                 .border(
                                     width = if (isPicked) 2.5.dp else 0.dp,
-                                    color = if (isPicked) CirclePurple else Color.Transparent,
+                                    color = if (isPicked) colorScheme.primary else Color.Transparent,
                                     shape = RoundedCornerShape(12.dp)
                                 )
                                 .clickable { selectedMediaUrl = photoUrl }
@@ -344,11 +348,10 @@ fun CreatePostScreen(
 
                 Spacer(modifier = Modifier.height(16.dp))
 
-                // 5 Aesthetic Filters
                 Text(
                     text = "Aesthetic Filter (5 Styles)",
                     style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.SemiBold),
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                    color = colors.secondaryText
                 )
                 Spacer(modifier = Modifier.height(8.dp))
                 LazyRow(
@@ -358,7 +361,7 @@ fun CreatePostScreen(
                         val isSelected = selectedFilter == filter.name
                         Surface(
                             shape = RoundedCornerShape(14.dp),
-                            color = if (isSelected) CirclePurple else MaterialTheme.colorScheme.surfaceVariant,
+                            color = if (isSelected) colorScheme.primary else colors.elevatedSurface,
                             modifier = Modifier
                                 .clickable { selectedFilter = filter.name }
                                 .testTag("filter_${filter.id}")
@@ -371,14 +374,14 @@ fun CreatePostScreen(
                                     text = filter.name,
                                     style = MaterialTheme.typography.labelMedium.copy(
                                         fontWeight = FontWeight.SemiBold,
-                                        color = if (isSelected) PureWhite else MaterialTheme.colorScheme.onSurface
+                                        color = if (isSelected) colorScheme.onPrimary else colors.primaryText
                                     )
                                 )
                                 Text(
                                     text = filter.description,
                                     style = MaterialTheme.typography.labelSmall.copy(
                                         fontSize = 9.sp,
-                                        color = if (isSelected) PureWhite.copy(alpha = 0.8f) else MaterialTheme.colorScheme.onSurfaceVariant
+                                        color = if (isSelected) colorScheme.onPrimary.copy(alpha = 0.8f) else colors.secondaryText
                                     )
                                 )
                             }
@@ -390,21 +393,22 @@ fun CreatePostScreen(
             Spacer(modifier = Modifier.height(18.dp))
 
             val postFieldColors = OutlinedTextFieldDefaults.colors(
-                focusedTextColor = MaterialTheme.colorScheme.onSurface,
-                unfocusedTextColor = MaterialTheme.colorScheme.onSurface,
-                focusedLabelColor = CirclePurple,
-                unfocusedLabelColor = MaterialTheme.colorScheme.onSurfaceVariant,
-                focusedBorderColor = CirclePurple,
-                unfocusedBorderColor = MaterialTheme.colorScheme.outline,
-                cursorColor = CirclePurple,
-                focusedPlaceholderColor = PlaceholderHint,
-                unfocusedPlaceholderColor = PlaceholderHint
+                focusedTextColor = colors.primaryText,
+                unfocusedTextColor = colors.primaryText,
+                focusedLabelColor = colorScheme.primary,
+                unfocusedLabelColor = colors.secondaryText,
+                focusedBorderColor = colorScheme.primary,
+                unfocusedBorderColor = colors.divider,
+                cursorColor = colorScheme.primary,
+                focusedPlaceholderColor = colors.placeholderText,
+                unfocusedPlaceholderColor = colors.placeholderText,
+                focusedContainerColor = colors.cardSurface,
+                unfocusedContainerColor = colors.cardSurface
             )
             val postFieldTextStyle = MaterialTheme.typography.bodyMedium.copy(
-                color = MaterialTheme.colorScheme.onSurface
+                color = colors.primaryText
             )
 
-            // Caption Field
             OutlinedTextField(
                 value = caption,
                 onValueChange = { caption = it },
@@ -421,14 +425,13 @@ fun CreatePostScreen(
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // Location Tag
             OutlinedTextField(
                 value = location,
                 onValueChange = { location = it },
                 label = { Text("Add Location") },
                 placeholder = { Text("e.g. Café Kitsuné, West Village") },
                 leadingIcon = {
-                    Icon(imageVector = Icons.Default.LocationOn, contentDescription = null, tint = CirclePurple)
+                    Icon(imageVector = Icons.Default.LocationOn, contentDescription = null, tint = colorScheme.primary)
                 },
                 modifier = Modifier
                     .fillMaxWidth()
@@ -439,24 +442,24 @@ fun CreatePostScreen(
                 textStyle = postFieldTextStyle
             )
 
-            // Location Quick Chips
             Spacer(modifier = Modifier.height(6.dp))
             LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 items(listOf("West Village", "Studio B", "Brooklyn Rooftop", "Home Sweet Home", "Late Night Walk")) { place ->
                     SuggestionChip(
                         onClick = { location = place },
-                        label = { Text(place, fontSize = 11.sp) }
+                        label = { Text(place, fontSize = 11.sp, color = colors.primaryText) },
+                        colors = SuggestionChipDefaults.suggestionChipColors(containerColor = colors.cardSurface),
+                        border = androidx.compose.foundation.BorderStroke(1.dp, colors.divider)
                     )
                 }
             }
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // Tag Friends
             Text(
                 text = "Tag Friends in Circle",
                 style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.SemiBold),
-                color = MaterialTheme.colorScheme.onSurfaceVariant
+                color = colors.secondaryText
             )
             Spacer(modifier = Modifier.height(6.dp))
             LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -491,7 +494,7 @@ fun CreatePostScreen(
             // Close Friends Only Switch
             Surface(
                 shape = RoundedCornerShape(18.dp),
-                color = if (isCloseFriendsOnly) CloseFriendsGreenContainer else MaterialTheme.colorScheme.surfaceVariant,
+                color = if (isCloseFriendsOnly) colors.closeFriendsContainer else colors.elevatedSurface,
                 modifier = Modifier.fillMaxWidth()
             ) {
                 Row(
@@ -509,19 +512,19 @@ fun CreatePostScreen(
                             modifier = Modifier
                                 .size(10.dp)
                                 .clip(CircleShape)
-                                .background(CloseFriendsGreen)
+                                .background(colors.closeFriendsAccent)
                         )
                         Spacer(modifier = Modifier.width(10.dp))
                         Column {
                             Text(
                                 text = "Close Friends Only",
                                 style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold),
-                                color = if (isCloseFriendsOnly) CloseFriendsGreen else MaterialTheme.colorScheme.onSurface
+                                color = if (isCloseFriendsOnly) colors.closeFriendsAccent else colors.primaryText
                             )
                             Text(
                                 text = "Only your designated inner circle will see this moment.",
                                 style = MaterialTheme.typography.bodySmall,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                                color = colors.secondaryText
                             )
                         }
                     }
@@ -530,8 +533,8 @@ fun CreatePostScreen(
                         checked = isCloseFriendsOnly,
                         onCheckedChange = { isCloseFriendsOnly = it },
                         colors = SwitchDefaults.colors(
-                            checkedThumbColor = PureWhite,
-                            checkedTrackColor = CloseFriendsGreen
+                            checkedThumbColor = colors.onCloseFriendsAccent,
+                            checkedTrackColor = colors.closeFriendsAccent
                         ),
                         modifier = Modifier.testTag("close_friends_toggle_switch")
                     )
@@ -545,11 +548,12 @@ fun CreatePostScreen(
     if (safetyAlertMessage != null) {
         AlertDialog(
             onDismissRequest = { safetyAlertMessage = null },
+            containerColor = colors.cardSurface,
             icon = {
                 Icon(
                     imageVector = Icons.Default.Shield,
                     contentDescription = "Safety Alert",
-                    tint = androidx.compose.ui.graphics.Color(0xFFE53935),
+                    tint = colorScheme.error,
                     modifier = Modifier.size(32.dp)
                 )
             },
@@ -557,23 +561,26 @@ fun CreatePostScreen(
                 Text(
                     text = "ORBYN Safety Guard",
                     fontWeight = FontWeight.Bold,
-                    color = PrimaryText
+                    color = colors.primaryText
                 )
             },
             text = {
                 Text(
                     text = safetyAlertMessage ?: "",
                     style = MaterialTheme.typography.bodyMedium,
-                    color = PrimaryText
+                    color = colors.primaryText
                 )
             },
             confirmButton = {
                 Button(
                     onClick = { safetyAlertMessage = null },
-                    colors = ButtonDefaults.buttonColors(containerColor = BrandPrimary),
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = colorScheme.primary,
+                        contentColor = colorScheme.onPrimary
+                    ),
                     shape = RoundedCornerShape(10.dp)
                 ) {
-                    Text("Understood", color = PureWhite)
+                    Text("Understood")
                 }
             }
         )

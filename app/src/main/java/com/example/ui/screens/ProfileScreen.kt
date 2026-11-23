@@ -24,20 +24,19 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil.compose.AsyncImage
-import com.example.data.model.Post
 import com.example.data.model.PostType
 import com.example.data.model.User
 import com.example.ui.CircleViewModel
 import com.example.ui.Screen
-import com.example.ui.theme.*
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.example.ui.theme.OrbynTheme
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -45,28 +44,28 @@ fun ProfileScreen(
     viewModel: CircleViewModel,
     modifier: Modifier = Modifier
 ) {
-    val currentUser by viewModel.currentUser.collectAsState()
-    val posts by viewModel.posts.collectAsState()
+    val colors = OrbynTheme.colors
+    val colorScheme = MaterialTheme.colorScheme
+
+    val currentUser by viewModel.currentUser.collectAsStateWithLifecycle()
+    val posts by viewModel.posts.collectAsStateWithLifecycle()
+    val themeConfig by viewModel.themeConfig.collectAsStateWithLifecycle()
     val highlights = viewModel.repository.profileHighlights
 
     var selectedTab by remember { mutableIntStateOf(0) } // 0: Grid, 1: Settings
     var showEditProfileDialog by remember { mutableStateOf(false) }
 
-    val myPosts = remember(posts, currentUser.id) {
-        posts.filter { it.author.id == currentUser.id }
-    }
-
     Column(
         modifier = modifier
             .fillMaxSize()
             .statusBarsPadding()
-            .background(AppCanvas)
+            .background(colors.canvas)
     ) {
         // Top Bar
         Surface(
-            color = SurfaceColor,
+            color = colors.cardSurface,
             tonalElevation = 0.dp,
-            border = androidx.compose.foundation.BorderStroke(1.dp, DividerOutline),
+            border = androidx.compose.foundation.BorderStroke(1.dp, colors.divider),
             modifier = Modifier.fillMaxWidth()
         ) {
             Row(
@@ -83,26 +82,26 @@ fun ProfileScreen(
                             fontWeight = FontWeight.Bold,
                             fontSize = 17.sp
                         ),
-                        color = PrimaryText
+                        color = colors.primaryText
                     )
                     Spacer(modifier = Modifier.width(6.dp))
                     Icon(
                         imageVector = Icons.Default.Lock,
                         contentDescription = "Private Circle",
-                        tint = SecondaryText,
+                        tint = colors.secondaryText,
                         modifier = Modifier.size(15.dp)
                     )
                 }
 
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     IconButton(
-                        onClick = { viewModel.navigateTo(com.example.ui.Screen.SecurityVault) },
+                        onClick = { viewModel.navigateTo(Screen.SecurityVault) },
                         modifier = Modifier.testTag("profile_security_button")
                     ) {
                         Icon(
                             imageVector = Icons.Default.Shield,
                             contentDescription = "Security Vault",
-                            tint = CloseFriendsGreen,
+                            tint = colors.closeFriendsAccent,
                             modifier = Modifier.size(20.dp)
                         )
                     }
@@ -114,7 +113,7 @@ fun ProfileScreen(
                         Icon(
                             imageVector = Icons.AutoMirrored.Filled.ExitToApp,
                             contentDescription = "Sign Out",
-                            tint = SecondaryText
+                            tint = colors.secondaryText
                         )
                     }
                 }
@@ -139,7 +138,7 @@ fun ProfileScreen(
                 Box(
                     modifier = Modifier
                         .fillMaxSize()
-                        .border(1.5.dp, BrandPrimary, CircleShape)
+                        .border(1.5.dp, colorScheme.primary, CircleShape)
                         .padding(3.dp)
                 ) {
                     AsyncImage(
@@ -155,14 +154,14 @@ fun ProfileScreen(
                     modifier = Modifier
                         .size(24.dp)
                         .clip(CircleShape)
-                        .background(BrandPrimary)
-                        .border(1.5.dp, SurfaceColor, CircleShape),
+                        .background(colorScheme.primary)
+                        .border(1.5.dp, colors.cardSurface, CircleShape),
                     contentAlignment = Alignment.Center
                 ) {
                     Icon(
                         imageVector = Icons.Default.Edit,
                         contentDescription = "Edit photo",
-                        tint = PureWhite,
+                        tint = colorScheme.onPrimary,
                         modifier = Modifier.size(12.dp)
                     )
                 }
@@ -193,13 +192,13 @@ fun ProfileScreen(
                     fontWeight = FontWeight.Bold,
                     fontSize = 16.sp
                 ),
-                color = PrimaryText
+                color = colors.primaryText
             )
 
             Text(
                 text = "Your inner orbit.",
                 style = MaterialTheme.typography.labelSmall.copy(
-                    color = BrandPrimary,
+                    color = colorScheme.primary,
                     fontSize = 11.sp,
                     fontWeight = FontWeight.Medium
                 )
@@ -211,7 +210,7 @@ fun ProfileScreen(
                     text = currentUser.bio,
                     style = MaterialTheme.typography.bodyMedium.copy(
                         fontSize = 13.sp,
-                        color = PrimaryText
+                        color = colors.primaryText
                     )
                 )
             }
@@ -219,7 +218,7 @@ fun ProfileScreen(
 
         Spacer(modifier = Modifier.height(12.dp))
 
-        // Outline Edit Profile Button (10-12dp radius)
+        // Outline Edit Profile Button
         Row(
             modifier = Modifier
                 .fillMaxWidth()
@@ -232,9 +231,10 @@ fun ProfileScreen(
                     .height(38.dp)
                     .testTag("edit_profile_button"),
                 shape = RoundedCornerShape(11.dp),
-                border = androidx.compose.foundation.BorderStroke(1.dp, DividerOutline),
+                border = androidx.compose.foundation.BorderStroke(1.dp, colors.divider),
                 colors = ButtonDefaults.outlinedButtonColors(
-                    contentColor = PrimaryText
+                    containerColor = colors.cardSurface,
+                    contentColor = colors.primaryText
                 )
             ) {
                 Icon(
@@ -265,7 +265,7 @@ fun ProfileScreen(
                     Box(
                         modifier = Modifier
                             .size(56.dp)
-                            .border(1.dp, DividerOutline, CircleShape)
+                            .border(1.dp, colors.divider, CircleShape)
                             .padding(2.5.dp)
                     ) {
                         AsyncImage(
@@ -282,7 +282,7 @@ fun ProfileScreen(
                         text = title,
                         style = MaterialTheme.typography.labelSmall.copy(
                             fontSize = 10.sp,
-                            color = PrimaryText
+                            color = colors.primaryText
                         ),
                         maxLines = 1
                     )
@@ -292,21 +292,28 @@ fun ProfileScreen(
 
         Spacer(modifier = Modifier.height(10.dp))
 
-        // Tabs: Media Grid vs Simple White Settings sections
+        // Tabs: Media Grid vs Settings
         TabRow(
             selectedTabIndex = selectedTab,
-            containerColor = SurfaceColor,
-            contentColor = BrandPrimary,
-            modifier = Modifier.height(42.dp)
+            containerColor = colors.cardSurface,
+            contentColor = colorScheme.primary,
+            divider = { HorizontalDivider(color = colors.divider) },
+            modifier = Modifier.height(44.dp)
         ) {
             Tab(
                 selected = selectedTab == 0,
                 onClick = { selectedTab = 0 },
+                selectedContentColor = colorScheme.primary,
+                unselectedContentColor = colors.secondaryText,
+                modifier = Modifier.testTag("profile_tab_grid"),
                 text = { Text("Moments Grid", fontSize = 12.sp) }
             )
             Tab(
                 selected = selectedTab == 1,
                 onClick = { selectedTab = 1 },
+                selectedContentColor = colorScheme.primary,
+                unselectedContentColor = colors.secondaryText,
+                modifier = Modifier.testTag("profile_tab_settings"),
                 text = { Text("Settings", fontSize = 12.sp) }
             )
         }
@@ -324,8 +331,8 @@ fun ProfileScreen(
                 items(posts, key = { it.id }) { post ->
                     Card(
                         shape = RoundedCornerShape(14.dp),
-                        colors = CardDefaults.cardColors(containerColor = SurfaceColor),
-                        border = androidx.compose.foundation.BorderStroke(1.dp, DividerOutline),
+                        colors = CardDefaults.cardColors(containerColor = colors.cardSurface),
+                        border = androidx.compose.foundation.BorderStroke(1.dp, colors.divider),
                         modifier = Modifier
                             .aspectRatio(1f)
                             .clickable { }
@@ -335,14 +342,14 @@ fun ProfileScreen(
                                 Box(
                                     modifier = Modifier
                                         .fillMaxSize()
-                                        .background(SelectedBackground)
+                                        .background(colors.selectedContainer)
                                         .padding(8.dp),
                                     contentAlignment = Alignment.Center
                                 ) {
                                     Text(
                                         text = post.thoughtText ?: "",
                                         style = MaterialTheme.typography.labelSmall.copy(
-                                            color = PrimaryText,
+                                            color = colors.primaryText,
                                             fontSize = 9.sp
                                         ),
                                         maxLines = 3
@@ -361,22 +368,36 @@ fun ProfileScreen(
                 }
             }
         } else {
-            // Settings: Simple white sections for account, privacy and inner-circle membership
+            // Settings: Appearance & Themes, Account, Privacy, Inner-Circle
             Column(
                 modifier = Modifier
                     .fillMaxSize()
+                    .verticalScroll(rememberScrollState())
                     .padding(horizontal = 16.dp, vertical = 12.dp),
                 verticalArrangement = Arrangement.spacedBy(10.dp)
             ) {
                 SettingsSectionCard(
+                    title = "Appearance & Themes",
+                    description = "${themeConfig.theme.displayName} • ${themeConfig.appearanceMode.displayName} mode",
+                    leadingIcon = Icons.Default.Palette,
+                    badgeText = themeConfig.theme.displayName,
+                    testTag = "settings_appearance_themes_card",
+                    onClick = { viewModel.navigateTo(Screen.AppearanceThemes) }
+                )
+
+                SettingsSectionCard(
                     title = "Account & Profile",
                     description = "Edit name, handle, avatar and export your moments",
+                    leadingIcon = Icons.Default.Person,
+                    testTag = "settings_account_card",
                     onClick = { showEditProfileDialog = true }
                 )
 
                 SettingsSectionCard(
                     title = "Privacy & Security Vault",
                     description = "E2EE Curve25519, screenshot shield & disappearing timers",
+                    leadingIcon = Icons.Default.Shield,
+                    testTag = "settings_security_card",
                     onClick = { viewModel.navigateTo(Screen.SecurityVault) }
                 )
 
@@ -387,26 +408,32 @@ fun ProfileScreen(
                 SettingsSectionCard(
                     title = "Inner-Circle Membership (${circleMembers.size}/12)",
                     description = "Strict 12-person limit. Manage close friends and permissions.",
+                    leadingIcon = Icons.Default.Groups,
+                    testTag = "settings_inner_circle_card",
                     onClick = { showInnerCircleManager = true }
                 )
 
                 if (showInnerCircleManager) {
                     AlertDialog(
                         onDismissRequest = { showInnerCircleManager = false },
+                        containerColor = colors.cardSurface,
+                        titleContentColor = colors.primaryText,
+                        textContentColor = colors.primaryText,
                         title = {
                             Column {
-                                Text("Inner-Circle Membership", style = MaterialTheme.typography.titleMedium)
+                                Text("Inner-Circle Membership", style = MaterialTheme.typography.titleMedium, color = colors.primaryText)
                                 Spacer(modifier = Modifier.height(6.dp))
                                 LinearProgressIndicator(
                                     progress = { circleMembers.size / 12f },
                                     modifier = Modifier.fillMaxWidth().height(6.dp).clip(RoundedCornerShape(3.dp)),
-                                    color = BrandPrimary
+                                    color = colorScheme.primary,
+                                    trackColor = colors.selectedContainer
                                 )
                                 Spacer(modifier = Modifier.height(4.dp))
                                 Text(
                                     text = "${circleMembers.size} of 12 slots filled",
                                     style = MaterialTheme.typography.labelSmall,
-                                    color = SecondaryText
+                                    color = colors.secondaryText
                                 )
                             }
                         },
@@ -422,7 +449,7 @@ fun ProfileScreen(
                                     Row(
                                         modifier = Modifier
                                             .fillMaxWidth()
-                                            .background(MaterialTheme.colorScheme.surfaceVariant, RoundedCornerShape(10.dp))
+                                            .background(colors.elevatedSurface, RoundedCornerShape(10.dp))
                                             .padding(10.dp),
                                         verticalAlignment = Alignment.CenterVertically,
                                         horizontalArrangement = Arrangement.SpaceBetween
@@ -436,12 +463,12 @@ fun ProfileScreen(
                                             )
                                             Spacer(modifier = Modifier.width(10.dp))
                                             Column {
-                                                Text(member.name, style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Bold))
-                                                Text("@${member.username}", style = MaterialTheme.typography.labelSmall, color = SecondaryText)
+                                                Text(member.name, style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Bold), color = colors.primaryText)
+                                                Text("@${member.username}", style = MaterialTheme.typography.labelSmall, color = colors.secondaryText)
                                             }
                                         }
                                         TextButton(onClick = { viewModel.removeCircleMember(member.id) }) {
-                                            Text("Remove", color = MaterialTheme.colorScheme.error, fontSize = 12.sp)
+                                            Text("Remove", color = colorScheme.error, fontSize = 12.sp)
                                         }
                                     }
                                 }
@@ -454,7 +481,6 @@ fun ProfileScreen(
                                         showInnerCircleManager = false
                                         showCircleFullDialog = true
                                     } else {
-                                        // Add sample new member
                                         val newId = "u_${System.currentTimeMillis()}"
                                         val newMember = User(
                                             id = newId,
@@ -471,14 +497,17 @@ fun ProfileScreen(
                                         }
                                     }
                                 },
-                                colors = ButtonDefaults.buttonColors(containerColor = BrandPrimary)
+                                colors = ButtonDefaults.buttonColors(
+                                    containerColor = colorScheme.primary,
+                                    contentColor = colorScheme.onPrimary
+                                )
                             ) {
                                 Text("Add Member")
                             }
                         },
                         dismissButton = {
                             TextButton(onClick = { showInnerCircleManager = false }) {
-                                Text("Close")
+                                Text("Close", color = colors.secondaryText)
                             }
                         }
                     )
@@ -487,23 +516,32 @@ fun ProfileScreen(
                 if (showCircleFullDialog) {
                     AlertDialog(
                         onDismissRequest = { showCircleFullDialog = false },
-                        icon = { Icon(Icons.Default.Lock, contentDescription = null, tint = BrandPrimary) },
-                        title = { Text("Circle Full (12/12)") },
-                        text = { Text("Your Circle has reached the strict maximum limit of 12 close friends. To add a new member, please remove someone from your circle first.") },
+                        containerColor = colors.cardSurface,
+                        icon = { Icon(Icons.Default.Lock, contentDescription = null, tint = colorScheme.primary) },
+                        title = { Text("Circle Full (12/12)", color = colors.primaryText) },
+                        text = {
+                            Text(
+                                "Your Circle has reached the strict maximum limit of 12 close friends. To add a new member, please remove someone from your circle first.",
+                                color = colors.primaryText
+                            )
+                        },
                         confirmButton = {
                             Button(
                                 onClick = {
                                     showCircleFullDialog = false
                                     showInnerCircleManager = true
                                 },
-                                colors = ButtonDefaults.buttonColors(containerColor = BrandPrimary)
+                                colors = ButtonDefaults.buttonColors(
+                                    containerColor = colorScheme.primary,
+                                    contentColor = colorScheme.onPrimary
+                                )
                             ) {
                                 Text("Manage Circle")
                             }
                         },
                         dismissButton = {
                             TextButton(onClick = { showCircleFullDialog = false }) {
-                                Text("Cancel")
+                                Text("Cancel", color = colors.secondaryText)
                             }
                         }
                     )
@@ -512,14 +550,16 @@ fun ProfileScreen(
                 Spacer(modifier = Modifier.height(10.dp))
 
                 Box(
-                    modifier = Modifier.fillMaxWidth(),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(bottom = 90.dp),
                     contentAlignment = Alignment.Center
                 ) {
                     Text(
-                        text = "Demo Mode • ORBYN • Less noise. Closer circle.",
+                        text = "ORBYN • Less noise. Closer circle.",
                         style = MaterialTheme.typography.labelSmall.copy(
                             fontSize = 11.sp,
-                            color = SecondaryText
+                            color = colors.secondaryText
                         )
                     )
                 }
@@ -545,6 +585,7 @@ fun ProfileScreen(
 
 @Composable
 private fun ProfileStatItem(count: String, label: String) {
+    val colors = OrbynTheme.colors
     Column(horizontalAlignment = Alignment.CenterHorizontally) {
         Text(
             text = count,
@@ -552,13 +593,13 @@ private fun ProfileStatItem(count: String, label: String) {
                 fontWeight = FontWeight.Bold,
                 fontSize = 16.sp
             ),
-            color = PrimaryText
+            color = colors.primaryText
         )
         Text(
             text = label,
             style = MaterialTheme.typography.labelSmall.copy(
                 fontSize = 11.sp,
-                color = SecondaryText
+                color = colors.secondaryText
             )
         )
     }
@@ -568,14 +609,21 @@ private fun ProfileStatItem(count: String, label: String) {
 private fun SettingsSectionCard(
     title: String,
     description: String,
+    leadingIcon: ImageVector? = null,
+    badgeText: String? = null,
+    testTag: String? = null,
     onClick: () -> Unit
 ) {
+    val colors = OrbynTheme.colors
+    val colorScheme = MaterialTheme.colorScheme
+
     Surface(
-        shape = RoundedCornerShape(12.dp),
-        color = SurfaceColor,
-        border = androidx.compose.foundation.BorderStroke(1.dp, DividerOutline),
+        shape = RoundedCornerShape(14.dp),
+        color = colors.cardSurface,
+        border = androidx.compose.foundation.BorderStroke(1.dp, colors.divider),
         modifier = Modifier
             .fillMaxWidth()
+            .then(if (testTag != null) Modifier.testTag(testTag) else Modifier)
             .clickable { onClick() }
     ) {
         Row(
@@ -584,6 +632,24 @@ private fun SettingsSectionCard(
                 .padding(14.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
+            if (leadingIcon != null) {
+                Box(
+                    modifier = Modifier
+                        .size(38.dp)
+                        .clip(RoundedCornerShape(10.dp))
+                        .background(colors.selectedContainer),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Icon(
+                        imageVector = leadingIcon,
+                        contentDescription = null,
+                        tint = colorScheme.primary,
+                        modifier = Modifier.size(20.dp)
+                    )
+                }
+                Spacer(modifier = Modifier.width(12.dp))
+            }
+
             Column(modifier = Modifier.weight(1f)) {
                 Text(
                     text = title,
@@ -591,21 +657,52 @@ private fun SettingsSectionCard(
                         fontWeight = FontWeight.SemiBold,
                         fontSize = 14.sp
                     ),
-                    color = PrimaryText
+                    color = colors.primaryText
                 )
                 Spacer(modifier = Modifier.height(2.dp))
                 Text(
                     text = description,
                     style = MaterialTheme.typography.bodySmall.copy(
                         fontSize = 12.sp,
-                        color = SecondaryText
+                        color = colors.secondaryText
                     )
                 )
             }
+
+            if (badgeText != null) {
+                Spacer(modifier = Modifier.width(8.dp))
+                Surface(
+                    shape = RoundedCornerShape(8.dp),
+                    color = colors.selectedContainer
+                ) {
+                    Row(
+                        modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Box(
+                            modifier = Modifier
+                                .size(8.dp)
+                                .clip(CircleShape)
+                                .background(colorScheme.primary)
+                        )
+                        Spacer(modifier = Modifier.width(5.dp))
+                        Text(
+                            text = badgeText,
+                            style = MaterialTheme.typography.labelSmall.copy(
+                                fontSize = 10.sp,
+                                fontWeight = FontWeight.SemiBold
+                            ),
+                            color = colors.onSelectedContainer
+                        )
+                    }
+                }
+            }
+
+            Spacer(modifier = Modifier.width(4.dp))
             Icon(
                 imageVector = Icons.Default.ChevronRight,
                 contentDescription = null,
-                tint = SecondaryText,
+                tint = colors.secondaryText,
                 modifier = Modifier.size(18.dp)
             )
         }
@@ -631,6 +728,9 @@ private fun EditProfileDialog(
     onDismiss: () -> Unit,
     onSave: (String, String, String, String, String) -> Unit
 ) {
+    val colors = OrbynTheme.colors
+    val colorScheme = MaterialTheme.colorScheme
+
     var editName by remember { mutableStateOf(name) }
     var editUsername by remember { mutableStateOf(username) }
     var editBio by remember { mutableStateOf(bio) }
@@ -646,28 +746,29 @@ private fun EditProfileDialog(
     }
 
     val inputColors = OutlinedTextFieldDefaults.colors(
-        focusedTextColor = MaterialTheme.colorScheme.onSurface,
-        unfocusedTextColor = MaterialTheme.colorScheme.onSurface,
-        focusedLabelColor = BrandPrimary,
-        unfocusedLabelColor = SecondaryText,
-        focusedBorderColor = BrandPrimary,
-        unfocusedBorderColor = DividerOutline,
-        cursorColor = BrandPrimary,
-        focusedContainerColor = MaterialTheme.colorScheme.surface,
-        unfocusedContainerColor = MaterialTheme.colorScheme.surface
+        focusedTextColor = colors.primaryText,
+        unfocusedTextColor = colors.primaryText,
+        focusedLabelColor = colorScheme.primary,
+        unfocusedLabelColor = colors.secondaryText,
+        focusedBorderColor = colorScheme.primary,
+        unfocusedBorderColor = colors.divider,
+        cursorColor = colorScheme.primary,
+        focusedContainerColor = colors.cardSurface,
+        unfocusedContainerColor = colors.cardSurface
     )
     val inputTextStyle = MaterialTheme.typography.bodyMedium.copy(
-        color = MaterialTheme.colorScheme.onSurface,
+        color = colors.primaryText,
         fontWeight = FontWeight.Normal
     )
 
     AlertDialog(
         onDismissRequest = onDismiss,
+        containerColor = colors.cardSurface,
         title = {
             Text(
                 "Edit profile",
                 fontWeight = FontWeight.Bold,
-                color = MaterialTheme.colorScheme.onSurface
+                color = colors.primaryText
             )
         },
         text = {
@@ -694,7 +795,7 @@ private fun EditProfileDialog(
                         modifier = Modifier
                             .fillMaxSize()
                             .clip(CircleShape)
-                            .border(2.dp, BrandPrimary, CircleShape)
+                            .border(2.dp, colorScheme.primary, CircleShape)
                             .padding(3.dp)
                     ) {
                         AsyncImage(
@@ -709,15 +810,15 @@ private fun EditProfileDialog(
 
                     Surface(
                         shape = CircleShape,
-                        color = BrandPrimary,
-                        border = androidx.compose.foundation.BorderStroke(2.dp, SurfaceColor),
+                        color = colorScheme.primary,
+                        border = androidx.compose.foundation.BorderStroke(2.dp, colors.cardSurface),
                         modifier = Modifier.size(30.dp)
                     ) {
                         Box(contentAlignment = Alignment.Center) {
                             Icon(
                                 imageVector = Icons.Default.CameraAlt,
                                 contentDescription = "Change photo",
-                                tint = PureWhite,
+                                tint = colorScheme.onPrimary,
                                 modifier = Modifier.size(16.dp)
                             )
                         }
@@ -736,13 +837,13 @@ private fun EditProfileDialog(
                     Icon(
                         imageVector = Icons.Default.PhotoLibrary,
                         contentDescription = null,
-                        tint = BrandPrimary,
+                        tint = colorScheme.primary,
                         modifier = Modifier.size(16.dp)
                     )
                     Spacer(modifier = Modifier.width(6.dp))
                     Text(
                         "Upload from Gallery",
-                        color = BrandPrimary,
+                        color = colorScheme.primary,
                         style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.SemiBold)
                     )
                 }
@@ -752,7 +853,7 @@ private fun EditProfileDialog(
                     Text(
                         text = "Or choose avatar preset:",
                         style = MaterialTheme.typography.labelSmall.copy(
-                            color = SecondaryText,
+                            color = colors.secondaryText,
                             fontWeight = FontWeight.Medium
                         ),
                         modifier = Modifier.padding(bottom = 6.dp)
@@ -772,7 +873,7 @@ private fun EditProfileDialog(
                                     .clip(CircleShape)
                                     .border(
                                         width = if (isSelected) 2.5.dp else 1.dp,
-                                        color = if (isSelected) BrandPrimary else DividerOutline,
+                                        color = if (isSelected) colorScheme.primary else colors.divider,
                                         shape = CircleShape
                                     )
                                     .clickable { editAvatar = presetUrl }
@@ -781,9 +882,8 @@ private fun EditProfileDialog(
                     }
                 }
 
-                HorizontalDivider(color = DividerOutline, modifier = Modifier.padding(vertical = 4.dp))
+                HorizontalDivider(color = colors.divider, modifier = Modifier.padding(vertical = 4.dp))
 
-                // Name Field
                 OutlinedTextField(
                     value = editName,
                     onValueChange = { editName = it },
@@ -797,7 +897,6 @@ private fun EditProfileDialog(
                     textStyle = inputTextStyle
                 )
 
-                // Username Field
                 OutlinedTextField(
                     value = editUsername,
                     onValueChange = { editUsername = it },
@@ -806,7 +905,7 @@ private fun EditProfileDialog(
                         Text(
                             "@",
                             fontWeight = FontWeight.Bold,
-                            color = SecondaryText,
+                            color = colors.secondaryText,
                             modifier = Modifier.padding(start = 12.dp)
                         )
                     },
@@ -819,12 +918,11 @@ private fun EditProfileDialog(
                     textStyle = inputTextStyle
                 )
 
-                // Status Field
                 OutlinedTextField(
                     value = editStatus,
                     onValueChange = { editStatus = it },
                     label = { Text("Status text") },
-                    placeholder = { Text("e.g. 🎧 listening to music", color = PlaceholderHint) },
+                    placeholder = { Text("e.g. 🎧 listening to music", color = colors.placeholderText) },
                     singleLine = true,
                     shape = RoundedCornerShape(10.dp),
                     modifier = Modifier
@@ -834,7 +932,6 @@ private fun EditProfileDialog(
                     textStyle = inputTextStyle
                 )
 
-                // Bio Field
                 OutlinedTextField(
                     value = editBio,
                     onValueChange = { editBio = it },
@@ -852,11 +949,14 @@ private fun EditProfileDialog(
         confirmButton = {
             Button(
                 onClick = { onSave(editName, editUsername, editBio, editStatus, editAvatar) },
-                colors = ButtonDefaults.buttonColors(containerColor = BrandPrimary),
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = colorScheme.primary,
+                    contentColor = colorScheme.onPrimary
+                ),
                 shape = RoundedCornerShape(10.dp),
                 modifier = Modifier.testTag("edit_profile_save_button")
             ) {
-                Text("Save", color = PureWhite, fontWeight = FontWeight.SemiBold)
+                Text("Save", fontWeight = FontWeight.SemiBold)
             }
         },
         dismissButton = {
@@ -864,7 +964,7 @@ private fun EditProfileDialog(
                 onClick = onDismiss,
                 modifier = Modifier.testTag("edit_profile_cancel_button")
             ) {
-                Text("Cancel", color = SecondaryText)
+                Text("Cancel", color = colors.secondaryText)
             }
         }
     )

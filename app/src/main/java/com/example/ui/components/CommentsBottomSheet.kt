@@ -1,7 +1,6 @@
 package com.example.ui.components
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -21,9 +20,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
-import com.example.data.model.Comment
 import com.example.data.model.Post
-import com.example.ui.theme.*
+import com.example.ui.theme.OrbynTheme
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -32,6 +30,8 @@ fun CommentsBottomSheet(
     onDismiss: () -> Unit,
     onAddComment: (String) -> Unit
 ) {
+    val colors = OrbynTheme.colors
+    val colorScheme = MaterialTheme.colorScheme
     var commentText by remember { mutableStateOf("") }
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
 
@@ -39,8 +39,9 @@ fun CommentsBottomSheet(
         onDismissRequest = onDismiss,
         sheetState = sheetState,
         shape = RoundedCornerShape(topStart = 28.dp, topEnd = 28.dp),
-        containerColor = MaterialTheme.colorScheme.surface,
-        dragHandle = { BottomSheetDefaults.DragHandle() }
+        containerColor = colors.cardSurface,
+        contentColor = colors.primaryText,
+        dragHandle = { BottomSheetDefaults.DragHandle(color = colors.divider) }
     ) {
         Column(
             modifier = Modifier
@@ -58,7 +59,7 @@ fun CommentsBottomSheet(
                 Text(
                     text = "Comments (${post.comments.size})",
                     style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
-                    color = MaterialTheme.colorScheme.onSurface
+                    color = colors.primaryText
                 )
                 IconButton(
                     onClick = onDismiss,
@@ -67,12 +68,12 @@ fun CommentsBottomSheet(
                     Icon(
                         imageVector = Icons.Default.Close,
                         contentDescription = "Close",
-                        tint = MaterialTheme.colorScheme.onSurfaceVariant
+                        tint = colors.secondaryText
                     )
                 }
             }
 
-            HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
+            HorizontalDivider(color = colors.divider)
 
             // Comments List
             if (post.comments.isEmpty()) {
@@ -85,7 +86,7 @@ fun CommentsBottomSheet(
                     Text(
                         text = "No comments yet. Start the conversation!",
                         style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                        color = colors.secondaryText
                     )
                 }
             } else {
@@ -115,20 +116,20 @@ fun CommentsBottomSheet(
                                     Text(
                                         text = comment.author.name,
                                         style = MaterialTheme.typography.labelLarge,
-                                        color = MaterialTheme.colorScheme.onSurface
+                                        color = colors.primaryText
                                     )
                                     Spacer(modifier = Modifier.width(8.dp))
                                     Text(
                                         text = comment.timestamp,
                                         style = MaterialTheme.typography.labelSmall,
-                                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                                        color = colors.secondaryText
                                     )
                                 }
                                 Spacer(modifier = Modifier.height(2.dp))
                                 Text(
                                     text = comment.text,
                                     style = MaterialTheme.typography.bodyMedium,
-                                    color = MaterialTheme.colorScheme.onSurface
+                                    color = colors.primaryText
                                 )
                             }
                         }
@@ -136,13 +137,13 @@ fun CommentsBottomSheet(
                 }
             }
 
-            HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
+            HorizontalDivider(color = colors.divider)
 
             var commentWarning by remember { mutableStateOf<String?>(null) }
 
             if (commentWarning != null) {
                 Surface(
-                    color = androidx.compose.ui.graphics.Color(0xFFFFEBEE),
+                    color = colors.warningContainer,
                     shape = RoundedCornerShape(8.dp),
                     modifier = Modifier
                         .fillMaxWidth()
@@ -151,7 +152,7 @@ fun CommentsBottomSheet(
                     Text(
                         text = commentWarning ?: "",
                         style = MaterialTheme.typography.labelSmall.copy(
-                            color = androidx.compose.ui.graphics.Color(0xFFC62828),
+                            color = colors.onWarningContainer,
                             fontSize = 11.sp
                         ),
                         modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp)
@@ -172,22 +173,28 @@ fun CommentsBottomSheet(
                         commentText = it
                         if (commentWarning != null) commentWarning = null
                     },
-                    placeholder = { Text("Add a comment for the circle...", fontSize = 14.sp, color = PlaceholderHint) },
+                    placeholder = {
+                        Text(
+                            "Add a comment for the circle...",
+                            fontSize = 14.sp,
+                            color = colors.placeholderText
+                        )
+                    },
                     modifier = Modifier
                         .weight(1f)
                         .testTag("comment_input_field"),
                     shape = RoundedCornerShape(24.dp),
                     colors = OutlinedTextFieldDefaults.colors(
-                        focusedTextColor = MaterialTheme.colorScheme.onSurface,
-                        unfocusedTextColor = MaterialTheme.colorScheme.onSurface,
-                        focusedBorderColor = CirclePurple,
-                        unfocusedBorderColor = MaterialTheme.colorScheme.outline,
-                        cursorColor = CirclePurple,
-                        focusedContainerColor = MaterialTheme.colorScheme.surface,
-                        unfocusedContainerColor = MaterialTheme.colorScheme.surface
+                        focusedTextColor = colors.primaryText,
+                        unfocusedTextColor = colors.primaryText,
+                        focusedBorderColor = colorScheme.primary,
+                        unfocusedBorderColor = colors.divider,
+                        cursorColor = colorScheme.primary,
+                        focusedContainerColor = colors.cardSurface,
+                        unfocusedContainerColor = colors.cardSurface
                     ),
                     textStyle = MaterialTheme.typography.bodyMedium.copy(
-                        color = MaterialTheme.colorScheme.onSurface
+                        color = colors.primaryText
                     ),
                     maxLines = 3
                 )
@@ -208,14 +215,14 @@ fun CommentsBottomSheet(
                     modifier = Modifier
                         .size(44.dp)
                         .clip(CircleShape)
-                        .background(if (commentText.isNotBlank()) CirclePurple else MaterialTheme.colorScheme.surfaceVariant)
+                        .background(if (commentText.isNotBlank()) colorScheme.primary else colors.elevatedSurface)
                         .testTag("send_comment_button"),
                     enabled = commentText.isNotBlank()
                 ) {
                     Icon(
                         imageVector = Icons.AutoMirrored.Filled.Send,
                         contentDescription = "Send",
-                        tint = if (commentText.isNotBlank()) PureWhite else MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f),
+                        tint = if (commentText.isNotBlank()) colorScheme.onPrimary else colors.secondaryText.copy(alpha = 0.6f),
                         modifier = Modifier.size(20.dp)
                     )
                 }
